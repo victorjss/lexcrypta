@@ -1185,7 +1185,7 @@ public class JdbcHelperTest {
                     throws SQLException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
-        }
+        };
         assertEquals("insert into...", helper.getSql(dbmd, "insert1"));
         assertNull(helper.getSql(dbmd, "insert2"));
         
