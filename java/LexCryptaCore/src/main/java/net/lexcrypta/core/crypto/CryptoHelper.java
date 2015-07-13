@@ -18,6 +18,7 @@
 package net.lexcrypta.core.crypto;
 
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -26,6 +27,7 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -33,15 +35,15 @@ import javax.crypto.spec.SecretKeySpec;
  * @author Víctor Suárez <victorjss@gmail.com>
  */
 public class CryptoHelper {
+    static final String AES_CBC_PKCS5PADDING = "AES/CBC/PKCS5Padding";
+
     KeyGenerator keyGenerator;
-    Cipher aesCipher;
 
     public CryptoHelper() {
         try {
             keyGenerator = KeyGenerator.getInstance("AES");
             keyGenerator.init(128);
-            aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
@@ -61,21 +63,24 @@ public class CryptoHelper {
     }
     
     
-    public InputStream decrypt(InputStream encryptedContent, String key) {
+    public InputStream decrypt(InputStream encryptedContent, String iv, String key) {
         try {
-            aesCipher.init(Cipher.DECRYPT_MODE, convertKey(key));
-        } catch (InvalidKeyException e) {
+            Cipher aesCipher = Cipher.getInstance(AES_CBC_PKCS5PADDING);
+            aesCipher.init(Cipher.DECRYPT_MODE, convertKey(key), new IvParameterSpec(Base64.getDecoder().decode(iv)));
+            return new CipherInputStream(encryptedContent, aesCipher);
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
             throw new RuntimeException(e);
         }
-        return new CipherInputStream(encryptedContent, aesCipher);
+    }
+
+    public InputStream encrypt(InputStream plainContent, String iv, String key) {
+        try {
+            Cipher aesCipher = Cipher.getInstance(AES_CBC_PKCS5PADDING);
+            aesCipher.init(Cipher.ENCRYPT_MODE, convertKey(key), new IvParameterSpec(Base64.getDecoder().decode(iv)));
+            return new CipherInputStream(plainContent, aesCipher);
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
+            throw new RuntimeException(e);
+        }
     }
     
-    public InputStream encrypt(InputStream plainContent, String key) {
-        try {
-            aesCipher.init(Cipher.ENCRYPT_MODE, convertKey(key));
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        }
-        return new CipherInputStream(plainContent, aesCipher);
-    }
 }
