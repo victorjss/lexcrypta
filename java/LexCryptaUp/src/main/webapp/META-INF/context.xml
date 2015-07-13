@@ -1,2 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context antiJARLocking="true" path="/LexCryptaUp"/>
+<Context antiJARLocking="true" path="/LexCryptaDown">
+    <Resource name="${jdbc.jndi}" auth="Container"
+              factory="com.zaxxer.hikari.HikariJNDIFactory"
+              type="javax.sql.DataSource"
+              minimumIdle="50" 
+              maximumPoolSize="100"
+              connectionTimeout="300000"
+              autoCommit="false"
+              dataSourceClassName="${jdbc.datasource.class}"
+              dataSource.implicitCachingEnabled="true" 
+              dataSource.user="${jdbc.user}"
+              dataSource.password="${jdbc.password}"
+              dataSource.url="${jdbc.url}"/>
+    
+</Context>
