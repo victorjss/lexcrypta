@@ -17,9 +17,12 @@
  */
 package net.lexcrypta.core.crypto;
 
+import java.io.InputStream;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -57,6 +60,22 @@ public class CryptoHelper {
         return new SecretKeySpec(bytes, 0, bytes.length, "AES");
     }
     
-        
     
+    public InputStream decrypt(InputStream encryptedContent, String key) {
+        try {
+            aesCipher.init(Cipher.DECRYPT_MODE, convertKey(key));
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+        return new CipherInputStream(encryptedContent, aesCipher);
+    }
+    
+    public InputStream encrypt(InputStream plainContent, String key) {
+        try {
+            aesCipher.init(Cipher.ENCRYPT_MODE, convertKey(key));
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+        return new CipherInputStream(plainContent, aesCipher);
+    }
 }
