@@ -58,7 +58,10 @@ public class StorageService {
     }
     
     /**
-     * 
+     * Encrypt content, using AES with a random key and a Initialization Vector
+     * generated from 'seed' parameter.
+     * This method returns a EncryptedData structure with all the necessary 
+     * information to allow following storage in data base.
      * @param content
      * @param seed
      * @return 
@@ -87,8 +90,6 @@ public class StorageService {
             byte[] encryptedPath = IOUtils.toByteArray(encryptedPathStream);
 
             EncryptedData ed = new EncryptedData();
-            ed.setFile(aesFile);
-            ed.setIv(iv);
             ed.setKey(key);
             ed.setId(id);
             ed.setEncryptedPath(encryptedPath);

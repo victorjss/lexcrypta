@@ -17,26 +17,20 @@
  */
 package net.lexcrypta.core.storage;
 
-import java.io.File;
-
 /**
- *
+ * Needed data for storing encryption data and generating the download URL.
+ * We must avoid that a user with database access can conclud the IV, key or 
+ * file associated with a URL.
  * @author Víctor Suárez <victorjss@gmail.com>
  */
 public class EncryptedData {
-    File file;
+    /**
+     * File with encrypted content
+     */
     byte[] key;
     byte[] iv;
     byte[] id;
     byte[] encryptedPath;
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
 
     public byte[] getKey() {
         return key;
@@ -44,14 +38,6 @@ public class EncryptedData {
 
     public void setKey(byte[] key) {
         this.key = key;
-    }
-
-    public byte[] getIv() {
-        return iv;
-    }
-
-    public void setIv(byte[] iv) {
-        this.iv = iv;
     }
 
     public byte[] getId() {
