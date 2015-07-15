@@ -58,8 +58,12 @@ public class CryptoHelper {
     }
     
     
-    public SecretKey getNewKey() {
+    public SecretKey getNewSecretKey() {
         return keyGenerator.generateKey();
+    }
+    
+    public byte[] getNewKey() {
+        return keyGenerator.generateKey().getEncoded();
     }
     
     public String convertKey(SecretKey key) {
