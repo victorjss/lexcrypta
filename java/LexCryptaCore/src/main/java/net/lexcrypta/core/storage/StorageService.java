@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import net.lexcrypta.core.jdbc.JdbcHelper;
@@ -68,7 +69,7 @@ public class StorageService {
      */
     public EncryptedData encryptContent(InputStream content, String seed) {
         try {
-            byte[] iv = rightPad(seed, '!').getBytes("utf-8");
+            byte[] iv = getIv(seed);
             byte[] key = cryptoHelper.getNewKey();
             InputStream encryptedStream = cryptoHelper.encrypt(content, iv, key);
 
@@ -96,6 +97,20 @@ public class StorageService {
 
             return ed;
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Generate the Initialization Vector from seed bytes
+     * @param seed the seed
+     * @return
+     */
+    protected byte[] getIv(String seed) {
+        try {
+            return rightPad(seed, '!').getBytes("utf-8");
+        } catch (UnsupportedEncodingException e) {
+            //weird, hardcoded UTF-8
             throw new RuntimeException(e);
         }
     }
