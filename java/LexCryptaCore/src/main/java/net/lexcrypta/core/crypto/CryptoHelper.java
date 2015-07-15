@@ -36,16 +36,25 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class CryptoHelper {
     static final String AES_CBC_PKCS5PADDING = "AES/CBC/PKCS5Padding";
-
+    static final int KEY_LENGTH = 128;
+    
     KeyGenerator keyGenerator;
 
     public CryptoHelper() {
         try {
             keyGenerator = KeyGenerator.getInstance("AES");
-            keyGenerator.init(128);
+            keyGenerator.init(KEY_LENGTH);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getAlgorithm() {
+        return AES_CBC_PKCS5PADDING;
+    }
+    
+    public int getKeyLength() {
+        return KEY_LENGTH;
     }
     
     

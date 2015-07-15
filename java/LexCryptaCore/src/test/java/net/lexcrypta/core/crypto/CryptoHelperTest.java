@@ -66,4 +66,16 @@ public class CryptoHelperTest {
                  Base64.getDecoder().decode(base64Secret));
          assertEquals(plainText, new String(IOUtils.toByteArray(unencrypted), "utf-8"));
      }
+     
+     @Test
+     public void testAlgorithm() {
+         CryptoHelper helper = new CryptoHelper();
+         assertEquals("AES/CBC/PKCS5Padding", helper.getAlgorithm());
+     }
+     
+     @Test
+     public void testKeyLength() {
+         CryptoHelper helper = new CryptoHelper();
+         assertEquals(128, helper.getKeyLength());
+     }
 }
