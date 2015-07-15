@@ -50,16 +50,20 @@ public class CryptoHelperTest {
      @Test
      public void testEncrypt() throws Exception {
          CryptoHelper helper = new CryptoHelper();
-         String ivBase64 = Base64.getEncoder().encodeToString(iv.getBytes("utf-8"));
-         InputStream encrypted = helper.encrypt(new ByteArrayInputStream(plainText.getBytes()), ivBase64, base64Secret);
+         InputStream encrypted = helper.encrypt(
+                 new ByteArrayInputStream(plainText.getBytes()), 
+                 iv.getBytes("utf-8"), 
+                 Base64.getDecoder().decode(base64Secret));
          assertEquals(base64EncryptedText, Base64.getEncoder().encodeToString(IOUtils.toByteArray(encrypted)));
      }
 
      @Test
      public void testDecrypt() throws Exception {
          CryptoHelper helper = new CryptoHelper();
-         String ivBase64 = Base64.getEncoder().encodeToString(iv.getBytes("utf-8"));
-         InputStream unencrypted = helper.decrypt(new ByteArrayInputStream(Base64.getDecoder().decode(base64EncryptedText)), ivBase64, base64Secret);
+         InputStream unencrypted = helper.decrypt(
+                 new ByteArrayInputStream(Base64.getDecoder().decode(base64EncryptedText)), 
+                 iv.getBytes("utf-8"), 
+                 Base64.getDecoder().decode(base64Secret));
          assertEquals(plainText, new String(IOUtils.toByteArray(unencrypted), "utf-8"));
      }
 }

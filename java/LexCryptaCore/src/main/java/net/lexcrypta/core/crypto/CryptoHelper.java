@@ -59,24 +59,28 @@ public class CryptoHelper {
     
     public SecretKey convertKey(String key) {
         byte[] bytes = Base64.getDecoder().decode(key);
-        return new SecretKeySpec(bytes, 0, bytes.length, "AES");
+        return new SecretKeySpec(bytes, "AES");
+    }
+
+    public SecretKey convertKey(byte[] key) {
+        return new SecretKeySpec(key, "AES");
     }
     
     
-    public InputStream decrypt(InputStream encryptedContent, String iv, String key) {
+    public InputStream decrypt(InputStream encryptedContent, byte[] iv, byte[] key) {
         try {
             Cipher aesCipher = Cipher.getInstance(AES_CBC_PKCS5PADDING);
-            aesCipher.init(Cipher.DECRYPT_MODE, convertKey(key), new IvParameterSpec(Base64.getDecoder().decode(iv)));
+            aesCipher.init(Cipher.DECRYPT_MODE, convertKey(key), new IvParameterSpec(iv));
             return new CipherInputStream(encryptedContent, aesCipher);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public InputStream encrypt(InputStream plainContent, String iv, String key) {
+    public InputStream encrypt(InputStream plainContent, byte[] iv, byte[] key) {
         try {
             Cipher aesCipher = Cipher.getInstance(AES_CBC_PKCS5PADDING);
-            aesCipher.init(Cipher.ENCRYPT_MODE, convertKey(key), new IvParameterSpec(Base64.getDecoder().decode(iv)));
+            aesCipher.init(Cipher.ENCRYPT_MODE, convertKey(key), new IvParameterSpec(iv));
             return new CipherInputStream(plainContent, aesCipher);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
             throw new RuntimeException(e);
