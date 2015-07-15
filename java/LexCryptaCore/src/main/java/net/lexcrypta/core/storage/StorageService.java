@@ -62,10 +62,11 @@ public class StorageService {
      * Encrypt content, using AES with a random key and a Initialization Vector
      * generated from 'seed' parameter.
      * This method returns a EncryptedData structure with all the necessary 
-     * information to allow following storage in data base.
-     * @param content
-     * @param seed
-     * @return 
+     * information to allow following storage in data base. Encryted data is 
+     * stored in file system, without a clue of original name/info.
+     * @param content conted to be encrypted
+     * @param seed value used to genererate the AES Initialization Vector
+     * @return struct with reference info of encryptation result
      */
     public EncryptedData encryptContent(InputStream content, String seed) {
         try {
@@ -104,7 +105,7 @@ public class StorageService {
     /**
      * Generate the Initialization Vector from seed bytes
      * @param seed the seed
-     * @return
+     * @return correct padded IV for AES use
      */
     protected byte[] getIv(String seed) {
         try {
