@@ -19,6 +19,7 @@ package net.lexcrypta.core.storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,29 +75,51 @@ public class StorageService {
             byte[] key = cryptoHelper.getNewKey();
             InputStream encryptedStream = cryptoHelper.encrypt(content, iv, key);
 
-            String basePath = jdbcHelper.getConfigurationValue("storage.basePath");
-            String destDirPath = basePath + File.separator + System.currentTimeMillis();
-            File destDir = new File(destDirPath);
-            if (!destDir.exists()) {
-                destDir.mkdir();
-            }
-            File aesFile = File.createTempFile("", ".aes", destDir);
-            FileOutputStream fos = new FileOutputStream(aesFile);
-
-            IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
-
-            byte[] id = encryptString(seed, iv, key);
-            byte[] encryptedPath = encryptString(destDirPath, iv, key);
-
-            EncryptedData ed = new EncryptedData();
-            ed.setKey(key);
-            ed.setId(id);
-            ed.setEncryptedPath(encryptedPath);
-
-            return ed;
+            String targetDirPath = getTargetDirPath();
+            File targetFile = getTargetFile(targetDirPath);
+            return doEncryptContent(targetFile, encryptedStream, seed, iv, key,
+                    targetDirPath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected EncryptedData doEncryptContent(File targetFile,
+            InputStream encryptedStream,
+            String seed,
+            byte[] iv,
+            byte[] key,
+            String destDirPath)
+            throws IOException, FileNotFoundException {
+        FileOutputStream fos = new FileOutputStream(targetFile);
+        
+        IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
+        
+        byte[] id = encryptString(seed, iv, key);
+        byte[] encryptedPath = encryptString(destDirPath, iv, key);
+        
+        EncryptedData ed = new EncryptedData();
+        ed.setKey(key);
+        ed.setId(id);
+        ed.setEncryptedPath(encryptedPath);
+        
+        return ed;
+    }
+
+    protected File getTargetFile(String targetDirPath)
+            throws IOException {
+        File targetDir = new File(targetDirPath);
+        if (!targetDir.exists()) {
+            targetDir.mkdir();
+        }
+        File aesFile = File.createTempFile("", ".aes", targetDir);
+        return aesFile;
+    }
+
+    protected String getTargetDirPath() {
+        String basePath = jdbcHelper.getConfigurationValue("storage.basePath");
+        String targetDirPath = basePath + File.separator + System.currentTimeMillis();
+        return targetDirPath;
     }
 
     protected byte[] encryptString(String s,
