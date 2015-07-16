@@ -81,7 +81,8 @@ public class StorageService {
     }
 
     /**
-     * This method was created/refactored for facilitating integration test development. 
+     * This method was created/refactored for facilitating development
+     * of integration tests. 
      * This method builds a EncryptedData structure from parameters.
      * @param content conted to be encrypted
      * @param targetFile File where encrypted content will be saved
