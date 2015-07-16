@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import net.lexcrypta.core.crypto.CryptoHelper;
-import net.lexcrypta.core.jdbc.JdbcHelper;
+import net.lexcrypta.core.conf.CoreHelper;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -34,7 +34,7 @@ import org.apache.commons.io.IOUtils;
  */
 public class StorageService {
     CryptoHelper cryptoHelper = new CryptoHelper();
-    JdbcHelper jdbcHelper = new JdbcHelper();
+    CoreHelper jdbcHelper = new CoreHelper();
 
     static volatile Properties coreProps = null;
     

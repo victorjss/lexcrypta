@@ -15,8 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.lexcrypta.core.jdbc;
+package net.lexcrypta.core.conf;
 
+import net.lexcrypta.core.conf.CoreHelper;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -32,9 +33,9 @@ import static org.junit.Assert.*;
  *
  * @author Víctor Suárez<victorjss@gmail.com>
  */
-public class JdbcHelperTest {
+public class CoreHelperTest {
 
-    public JdbcHelperTest() {
+    public CoreHelperTest() {
     }
 
     @Before
@@ -47,7 +48,7 @@ public class JdbcHelperTest {
 
     @Test
     public void testGetConfigurationValue() {
-        JdbcHelper helper = new JdbcHelper();
+        CoreHelper helper = new CoreHelper();
         Properties props = new Properties();
         props.setProperty("key1", "value1");
         helper.coreProps = props;
@@ -66,7 +67,7 @@ public class JdbcHelperTest {
     
     @Test
     public void testGetSql() {
-        JdbcHelper helper = new JdbcHelper();
+        CoreHelper helper = new CoreHelper();
         Properties props = new Properties();
         props.setProperty("testdb.insert1", "insert into...");
         helper.queriesProps = props;

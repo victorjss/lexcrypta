@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.lexcrypta.core.jdbc;
+package net.lexcrypta.core.conf;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -30,7 +30,7 @@ import javax.sql.DataSource;
  *
  * @author Víctor Suárez<victorjss@gmail.com>
  */
-public class JdbcHelper {
+public class CoreHelper {
     static volatile Properties queriesProps = null;
     static volatile Properties coreProps = null;
     
@@ -43,7 +43,7 @@ public class JdbcHelper {
     public String getConfigurationValue(String property) {
         Properties props = coreProps; //optimized volatile access (only one access in this way if already initilized)
         if (props == null) {
-            synchronized (JdbcHelper.class) {
+            synchronized (CoreHelper.class) {
                 if (coreProps == null) {
                     Properties ps = new Properties();
                     try {
@@ -95,7 +95,7 @@ public class JdbcHelper {
     public String getNamedSql(String sqlName) {
         Properties props = queriesProps; //optimized volatile access (only one access in this way if already initilized)
         if (props == null) {
-            synchronized (JdbcHelper.class) {
+            synchronized (CoreHelper.class) {
                 if (queriesProps == null) {
                     Properties ps = new Properties();
                     try {
