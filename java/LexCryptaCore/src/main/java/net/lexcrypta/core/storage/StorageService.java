@@ -71,28 +71,38 @@ public class StorageService {
      */
     public EncryptedData encryptContent(InputStream content, String seed) {
         try {
-            byte[] iv = getIv(seed);
             byte[] key = cryptoHelper.getNewKey();
-            InputStream encryptedStream = cryptoHelper.encrypt(content, iv, key);
-
             String targetDirPath = getTargetDirPath();
             File targetFile = getTargetFile(targetDirPath);
-            return doEncryptContent(targetFile, encryptedStream, seed, iv, key,
-                    targetDirPath);
+            return doEncryptContent(content, targetFile, seed, key, targetDirPath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected EncryptedData doEncryptContent(File targetFile,
-            InputStream encryptedStream,
+    /**
+     * This method was created/refactored for facilitating integration test development. 
+     * This method builds a EncryptedData structure from parameters.
+     * @param content conted to be encrypted
+     * @param targetFile File where encrypted content will be saved
+     * @param seed value used to genererate the AES Initialization Vector
+     * @param key AES key used for encryption
+     * @param destDirPath target directory for encrypted data file
+     * @return struct with reference info of encryptation result
+     * @throws IOException
+     * @throws FileNotFoundException 
+     */
+    protected EncryptedData doEncryptContent(InputStream content, 
+            File targetFile,
             String seed,
-            byte[] iv,
             byte[] key,
             String destDirPath)
             throws IOException, FileNotFoundException {
-        FileOutputStream fos = new FileOutputStream(targetFile);
         
+        byte[] iv = getIv(seed);
+        InputStream encryptedStream = cryptoHelper.encrypt(content, iv, key);
+
+        FileOutputStream fos = new FileOutputStream(targetFile);
         IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
         
         byte[] id = encryptString(seed, iv, key);
