@@ -85,11 +85,8 @@ public class StorageService {
 
             IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
 
-            InputStream encryptedSeedStream = cryptoHelper.encrypt(new ByteArrayInputStream(seed.getBytes("utf-8")), iv, key);
-            byte[] id = IOUtils.toByteArray(encryptedSeedStream);
-            
-            InputStream encryptedPathStream = cryptoHelper.encrypt(new ByteArrayInputStream(destDirPath.getBytes("utf-8")), iv, key);
-            byte[] encryptedPath = IOUtils.toByteArray(encryptedPathStream);
+            byte[] id = encryptString(seed, iv, key);
+            byte[] encryptedPath = encryptString(destDirPath, iv, key);
 
             EncryptedData ed = new EncryptedData();
             ed.setKey(key);
@@ -100,6 +97,15 @@ public class StorageService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected byte[] encryptString(String s,
+            byte[] iv,
+            byte[] key)
+            throws IOException, UnsupportedEncodingException {
+        InputStream encryptedStream = cryptoHelper.encrypt(new ByteArrayInputStream(s.getBytes("utf-8")), iv, key);
+        byte[] id = IOUtils.toByteArray(encryptedStream);
+        return id;
     }
 
     /**
