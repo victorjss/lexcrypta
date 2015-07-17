@@ -28,7 +28,6 @@ public class EncryptedData {
      * File with encrypted content
      */
     byte[] key;
-    byte[] iv;
     byte[] id;
     byte[] encryptedPath;
 
