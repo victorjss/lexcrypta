@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 public class CoreHelper {
     static volatile Properties queriesProps = null;
     static volatile Properties coreProps = null;
+    Connection testConnection = null;
 
     /**
      * Get configuration value (stored in core.properties) for the specified key. 
@@ -58,6 +59,14 @@ public class CoreHelper {
         }
         return props.getProperty(property);
     }
+
+    public Connection getTestConnection() {
+        return testConnection;
+    }
+
+    public void setTestConnection(Connection testConnection) {
+        this.testConnection = testConnection;
+    }
     
     /**
      * Get a new connection from the database pool
@@ -65,6 +74,9 @@ public class CoreHelper {
      * @throws SQLException 
      */
     public Connection getConnection() throws SQLException {
+        if (testConnection != null) {
+            return testConnection;
+        }
         DataSource ds = getDataSource();
         return ds.getConnection();
     }
