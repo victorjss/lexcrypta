@@ -1,0 +1,4 @@
+--MySQL
+CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048) NOT NULL, PRIMARY KEY (id));
+
+
