@@ -52,6 +52,36 @@ public class StorageServiceTest {
     }
     
     @Test
+    public void testGetIv() throws Exception {
+        String seed1 = "12345678";
+        String seed2 = "12345678901234567890";
+        
+        StorageService service = new StorageService();
+        
+        assertArrayEquals("12345678!!!!!!!!".getBytes("utf-8"), service.getIv(seed1));
+        assertArrayEquals("1234567890123456".getBytes("utf-8"), service.getIv(seed2));
+
+        try {
+            service.getIv(null);
+            fail("NullPointerExceptin expected");
+        } catch (NullPointerException expected) {
+            assertTrue(true);
+        }
+        try {
+            service.getIv("");
+            fail("IllegalArgumentException expected");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(true);
+        }
+        try {
+            service.getIv("123");
+            fail("IllegalArgumentException expected");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(true);
+        }
+    }
+    
+    @Test
     public void testDoEncryptContent() throws Exception {
         ByteArrayInputStream noTestedBais = new ByteArrayInputStream(new byte[512]);
         File noTestedTempFile = File.createTempFile("dummy", ".aes");
@@ -60,7 +90,7 @@ public class StorageServiceTest {
         
         String seed = "123456";
         byte[] key = new CryptoHelper().getNewKey();
-        byte[] iv =  service.rightPad(seed, '!').getBytes("utf-8");
+        byte[] iv =  service.getIv(seed);
         byte[] id = service.encryptString(seed, iv, key);
         byte[] encryptedPath = service.encryptString(noTestedTempFile.getPath(), iv, key);
         

@@ -146,6 +146,9 @@ public class StorageService {
      * @return correct padded IV for AES use
      */
     protected byte[] getIv(String seed) {
+        if (seed.length() < 6) {
+            throw new IllegalArgumentException("seed too short");
+        }
         try {
             return rightPad(seed, '!').getBytes("utf-8");
         } catch (UnsupportedEncodingException e) {
