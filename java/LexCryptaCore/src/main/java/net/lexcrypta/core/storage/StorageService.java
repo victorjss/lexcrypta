@@ -77,6 +77,15 @@ public class StorageService {
      * <ul><li>key must be stored NOWHERE, only must be in the shared URL</li>
      * <li>id must be stored in database along encrypted path</li>
      * <li>encryptedPath must be stored in database along id</li></ul>
+     * KEY is newly generated in each method invocation.
+     * ID is the encrypted seed, using a initialization vector based on seed 
+     * itself and built by #getIv(String). 
+     * PATH is encrypted with the same IV and KEY that the ID.
+     * With this protocol we are trying to avoid the possibility of recovering encrypted
+     * data because the key is never stored, only the owner of the shared URL 
+     * has such key. So if the server is compromised by an attacker, this one 
+     * could not discover the path of a file associated to a database record or 
+     * decrypt a file content (because the lack of keys).
      * @param content conted to be encrypted
      * @param seed value used to genererate the AES Initialization Vector
      * @return struct with reference info of encryptation result
