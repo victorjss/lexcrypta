@@ -44,6 +44,8 @@ public class CoreHelperTest {
 
     @After
     public void tearDown() {
+        CoreHelper.coreProps = null;
+        CoreHelper.queriesProps = null;
     }
 
     @Test
@@ -51,7 +53,7 @@ public class CoreHelperTest {
         CoreHelper helper = new CoreHelper();
         Properties props = new Properties();
         props.setProperty("key1", "value1");
-        helper.coreProps = props;
+        CoreHelper.coreProps = props;
         
         assertEquals("value1", helper.getConfigurationValue("key1"));
         assertNull(helper.getConfigurationValue("key2"));     
@@ -70,7 +72,7 @@ public class CoreHelperTest {
         CoreHelper helper = new CoreHelper();
         Properties props = new Properties();
         props.setProperty("testdb.insert1", "insert into...");
-        helper.queriesProps = props;
+        CoreHelper.queriesProps = props;
         
         DatabaseMetaData dbmd = new DatabaseMetaData() {
 
