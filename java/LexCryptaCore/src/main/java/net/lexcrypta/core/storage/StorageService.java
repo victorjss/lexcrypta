@@ -88,7 +88,8 @@ public class StorageService {
      * @param targetFile File where encrypted content will be saved
      * @param seed value used to genererate the AES Initialization Vector
      * @param key AES key used for encryption
-     * @param destDirPath target directory for encrypted data file
+     * @param targetDirPath target directory for encrypted data file, 
+     * relative to "storage.basePath" configuration key
      * @return struct with reference info of encryptation result
      * @throws IOException
      * @throws FileNotFoundException 
@@ -97,7 +98,7 @@ public class StorageService {
             File targetFile,
             String seed,
             byte[] key,
-            String destDirPath)
+            String targetDirPath)
             throws IOException, FileNotFoundException {
         
         byte[] iv = getIv(seed);
@@ -107,7 +108,7 @@ public class StorageService {
         IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
         
         byte[] id = encryptString(seed, iv, key);
-        byte[] encryptedPath = encryptString(destDirPath, iv, key);
+        byte[] encryptedPath = encryptString(targetDirPath, iv, key);
         
         EncryptedData ed = new EncryptedData();
         ed.setKey(key);
