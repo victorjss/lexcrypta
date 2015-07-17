@@ -126,6 +126,18 @@ public class StorageService {
         return ed;
     }
 
+    /**
+     * Decrypts content from provided seed and key.
+     * This method search the path of the file with the encrypted data by 
+     * executing a SQL similar to "select path from datatable where id=?"
+     * where ID is the seed encrypted with the provided key and an initialization 
+     * vector based on seed (built with #getIv(String) method).
+     * Path recovered is encrypted using the same key an IV used for ID.
+     * @param seed value used to genererate the AES Initialization Vector
+     * @param key AES key used for encryption
+     * @return an InputStream with decrypted content or null if the file is not
+     * present (expired?)
+     */
     public InputStream decryptContent(String seed, byte[] key) {
         try {
             byte[] iv = getIv(seed);
