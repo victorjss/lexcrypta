@@ -19,6 +19,10 @@ package net.lexcrypta.core.storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.util.Base64;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -49,6 +53,28 @@ public class StorageServiceTest {
         assertEquals("1234567890000000", storage.rightPad("123456789", '0'));
         assertEquals("123456789zzzzzzz", storage.rightPad("123456789", 'z'));
         assertEquals("123456789aaaaaaa", storage.rightPad("123456789aaaaaaabbbbbbb", 'z'));
+    }
+    
+    @Test
+    public void testEncryptString() throws Exception {
+        String plainText = "This is a encryption test!!!";
+        byte[] encryptedText = Base64.getDecoder().decode("zy2FE8sd/4WK3mMBVyay0GNYFa7CwZAkKWsqDRFf7og=");
+        byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
+        byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
+        
+        assertArrayEquals(encryptedText, new StorageService().encryptString(plainText, iv, key));
+
+    }
+    
+    @Test
+    public void testDecryptString() throws Exception {
+        String plainText = "This is a encryption test!!!";
+        byte[] encryptedText = Base64.getDecoder().decode("zy2FE8sd/4WK3mMBVyay0GNYFa7CwZAkKWsqDRFf7og=");
+        byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
+        byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
+        
+        assertEquals(plainText, new StorageService().decryptString(encryptedText, iv, key));
+
     }
     
     @Test
@@ -102,5 +128,36 @@ public class StorageServiceTest {
         assertArrayEquals(encryptedPath, ed.getEncryptedPath());
         
         
+    }
+    
+    @Test
+    public void testGetPathFromDatabase() throws Exception {
+        byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
+        byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
+        
+        StorageService service = new StorageService();
+        
+        String seed = "abcdefg";
+        byte[] encryptedSeed = service.encryptString(seed, iv, key);
+        String b64EncryptedSeed = Base64.getEncoder().encodeToString(encryptedSeed);
+        
+        String path = "/lexcrypta/java/iutest/getPathFromDatabase";
+        byte[] encryptedPath = service.encryptString(path, iv, key);
+        String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
+        
+        Class.forName("org.hsqldb.jdbcDriver");
+        Connection c = DriverManager.getConnection("jdbc:hsqldb:mem:testdb");
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048))");
+        ps.executeUpdate();
+        ps.close();
+        ps = c.prepareStatement("INSERT INTO lexcrypta (id, filepath) VALUES (?, ?)");
+        ps.setString(1, b64EncryptedSeed); //id
+        ps.setString(2, b64EncryptedPath); //path
+        ps.executeUpdate();
+        ps.close();
+        
+        service.coreHelper.setTestConnection(c);
+
+        assertEquals(path, service.getPathFromDatabase(encryptedSeed, iv, key));
     }
 }

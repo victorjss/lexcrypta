@@ -19,11 +19,17 @@ package net.lexcrypta.core.storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Base64;
 import java.util.Properties;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import net.lexcrypta.core.conf.CoreHelper;
@@ -115,6 +121,69 @@ public class StorageService {
         return ed;
     }
 
+    public InputStream decryptContent(String seed, byte[] key) {
+        try {
+            byte[] iv = getIv(seed);
+            byte[] id = encryptString(seed, iv, key);
+            
+            return getContentFromFileSystem(id, iv, key);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected InputStream getContentFromFileSystem(byte[] id,
+            byte[] iv,
+            byte[] key) {
+        
+        String path = getPathFromDatabase(id, iv, key);
+
+        if (path != null) {
+            try {
+                FileInputStream fis = new FileInputStream(path);
+
+                return cryptoHelper.decrypt(fis, iv, key);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    protected String getPathFromDatabase(byte[] id,
+            byte[] iv,
+            byte[] key)
+            throws RuntimeException {
+        String idBase64 = Base64.getEncoder().encodeToString(id);
+        try (
+                Connection conn = coreHelper.getConnection(); 
+                PreparedStatement ps = conn.prepareStatement(coreHelper.getSql(conn.getMetaData(), "select-path"));) {
+            ps.setString(1, idBase64);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+            
+                String encryptedPathBase64 = rs.getString(1);
+                return decryptDatabasePath(encryptedPathBase64, iv, key);
+
+            }
+            
+        } catch (IOException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    protected String decryptDatabasePath(String encryptedPathBase64,
+            byte[] iv,
+            byte[] key)
+            throws IOException {
+        byte[] encryptedPath = Base64.getDecoder().decode(encryptedPathBase64);
+        String path = decryptString(encryptedPath, iv, key);
+        return path;
+    }
+
     protected File getTargetFile(String targetDirPath)
             throws IOException {
         File targetDir = new File(targetDirPath);
@@ -136,8 +205,16 @@ public class StorageService {
             byte[] key)
             throws IOException, UnsupportedEncodingException {
         InputStream encryptedStream = cryptoHelper.encrypt(new ByteArrayInputStream(s.getBytes("utf-8")), iv, key);
-        byte[] id = IOUtils.toByteArray(encryptedStream);
-        return id;
+        return IOUtils.toByteArray(encryptedStream);
+    }
+
+    protected String decryptString(byte[] encryptedString,
+            byte[] iv,
+            byte[] key)
+            throws IOException, UnsupportedEncodingException {
+        InputStream encryptedStream = cryptoHelper.decrypt(new ByteArrayInputStream(encryptedString), iv, key);
+        byte[] b = IOUtils.toByteArray(encryptedStream);
+        return new String(b, "utf-8");
     }
 
     /**
