@@ -35,7 +35,7 @@ import org.apache.commons.io.IOUtils;
  */
 public class StorageService {
     CryptoHelper cryptoHelper = new CryptoHelper();
-    CoreHelper jdbcHelper = new CoreHelper();
+    CoreHelper coreHelper = new CoreHelper();
 
     static volatile Properties coreProps = null;
     
@@ -74,7 +74,7 @@ public class StorageService {
             byte[] key = cryptoHelper.getNewKey();
             String targetDirPath = getTargetDirPath();
             File targetFile = getTargetFile(targetDirPath);
-            return doEncryptContent(content, targetFile, seed, key, targetDirPath);
+            return doEncryptContent(content, targetFile, seed, key);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -88,8 +88,6 @@ public class StorageService {
      * @param targetFile File where encrypted content will be saved
      * @param seed value used to genererate the AES Initialization Vector
      * @param key AES key used for encryption
-     * @param targetDirPath target directory for encrypted data file, 
-     * relative to "storage.basePath" configuration key
      * @return struct with reference info of encryptation result
      * @throws IOException
      * @throws FileNotFoundException 
@@ -97,8 +95,7 @@ public class StorageService {
     protected EncryptedData doEncryptContent(InputStream content, 
             File targetFile,
             String seed,
-            byte[] key,
-            String targetDirPath)
+            byte[] key)
             throws IOException, FileNotFoundException {
         
         byte[] iv = getIv(seed);
@@ -108,7 +105,7 @@ public class StorageService {
         IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
         
         byte[] id = encryptString(seed, iv, key);
-        byte[] encryptedPath = encryptString(targetDirPath, iv, key);
+        byte[] encryptedPath = encryptString(targetFile.getPath(), iv, key);
         
         EncryptedData ed = new EncryptedData();
         ed.setKey(key);
@@ -129,7 +126,7 @@ public class StorageService {
     }
 
     protected String getTargetDirPath() {
-        String basePath = jdbcHelper.getConfigurationValue("storage.basePath");
+        String basePath = coreHelper.getConfigurationValue("storage.basePath");
         String targetDirPath = basePath + File.separator + System.currentTimeMillis();
         return targetDirPath;
     }

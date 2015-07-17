@@ -33,7 +33,7 @@ import javax.sql.DataSource;
 public class CoreHelper {
     static volatile Properties queriesProps = null;
     static volatile Properties coreProps = null;
-    
+
     /**
      * Get configuration value (stored in core.properties) for the specified key. 
      * This method assures thread-safe cache initialization.

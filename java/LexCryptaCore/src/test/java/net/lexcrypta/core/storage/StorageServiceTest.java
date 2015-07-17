@@ -15,9 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package net.lexcrypta.core.crypto.storage;
+package net.lexcrypta.core.storage;
 
-import net.lexcrypta.core.storage.StorageService;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import net.lexcrypta.core.crypto.CryptoHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,5 +49,28 @@ public class StorageServiceTest {
         assertEquals("1234567890000000", storage.rightPad("123456789", '0'));
         assertEquals("123456789zzzzzzz", storage.rightPad("123456789", 'z'));
         assertEquals("123456789aaaaaaa", storage.rightPad("123456789aaaaaaabbbbbbb", 'z'));
+    }
+    
+    @Test
+    public void testDoEncryptContent() throws Exception {
+        ByteArrayInputStream noTestedBais = new ByteArrayInputStream(new byte[512]);
+        File noTestedTempFile = File.createTempFile("dummy", ".aes");
+
+        StorageService service = new StorageService();
+        
+        String seed = "123456";
+        byte[] key = new CryptoHelper().getNewKey();
+        byte[] iv =  service.rightPad(seed, '!').getBytes("utf-8");
+        byte[] id = service.encryptString(seed, iv, key);
+        byte[] encryptedPath = service.encryptString(noTestedTempFile.getPath(), iv, key);
+        
+        EncryptedData ed = service.doEncryptContent(noTestedBais, noTestedTempFile,
+                seed, key);
+        
+        assertArrayEquals(key, ed.getKey());
+        assertArrayEquals(id, ed.getId());
+        assertArrayEquals(encryptedPath, ed.getEncryptedPath());
+        
+        
     }
 }
