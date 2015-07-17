@@ -29,7 +29,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Properties;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import net.lexcrypta.core.conf.CoreHelper;
@@ -69,8 +71,12 @@ public class StorageService {
      * Encrypt content, using AES with a random key and a Initialization Vector
      * generated from 'seed' parameter.
      * This method returns a EncryptedData structure with all the necessary 
-     * information to allow following storage in data base. Encryted data is 
-     * stored in file system, without a clue of original name/info.
+     * information to allow storage in database. Encryted data is 
+     * stored in file system without defined file name.
+     * Returned data must be treated in this way:
+     * <ul><li>key must be stored NOWHERE, only must be in the shared URL</li>
+     * <li>id must be stored in database along encrypted path</li>
+     * <li>encryptedPath must be stored in database along id</li></ul>
      * @param content conted to be encrypted
      * @param seed value used to genererate the AES Initialization Vector
      * @return struct with reference info of encryptation result
@@ -78,9 +84,7 @@ public class StorageService {
     public EncryptedData encryptContent(InputStream content, String seed) {
         try {
             byte[] key = cryptoHelper.getNewKey();
-            String targetDirPath = getTargetDirPath();
-            File targetFile = getTargetFile(targetDirPath);
-            return doEncryptContent(content, targetFile, seed, key);
+            return doEncryptContent(content, seed, key);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -89,9 +93,8 @@ public class StorageService {
     /**
      * This method was created/refactored for facilitating development
      * of integration tests. 
-     * This method builds a EncryptedData structure from parameters.
+     * This method builds a EncryptedData structure from provided parameters.
      * @param content conted to be encrypted
-     * @param targetFile File where encrypted content will be saved
      * @param seed value used to genererate the AES Initialization Vector
      * @param key AES key used for encryption
      * @return struct with reference info of encryptation result
@@ -99,13 +102,15 @@ public class StorageService {
      * @throws FileNotFoundException 
      */
     protected EncryptedData doEncryptContent(InputStream content, 
-            File targetFile,
             String seed,
             byte[] key)
             throws IOException, FileNotFoundException {
         
         byte[] iv = getIv(seed);
         InputStream encryptedStream = cryptoHelper.encrypt(content, iv, key);
+        
+        String targetDirPath = getTargetDirPath();
+        File targetFile = getTargetFile(targetDirPath);
 
         FileOutputStream fos = new FileOutputStream(targetFile);
         IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
@@ -190,13 +195,14 @@ public class StorageService {
         if (!targetDir.exists()) {
             targetDir.mkdir();
         }
-        File aesFile = File.createTempFile("", ".aes", targetDir);
+        File aesFile = File.createTempFile("lex", ".aes", targetDir);
         return aesFile;
     }
-
+    
+    static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     protected String getTargetDirPath() {
         String basePath = coreHelper.getConfigurationValue("storage.basePath");
-        String targetDirPath = basePath + File.separator + System.currentTimeMillis();
+        String targetDirPath = basePath + File.separator + sdf.format(new Date());
         return targetDirPath;
     }
 

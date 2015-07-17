@@ -35,6 +35,23 @@ public class CoreHelper {
     static volatile Properties coreProps = null;
     Connection testConnection = null;
 
+    public static Properties getQueriesProps() {
+        return queriesProps;
+    }
+
+    public static void setQueriesProps(Properties queriesProps) {
+        CoreHelper.queriesProps = queriesProps;
+    }
+
+    public static Properties getCoreProps() {
+        return coreProps;
+    }
+
+    public static void setCoreProps(Properties coreProps) {
+        CoreHelper.coreProps = coreProps;
+    }
+
+
     /**
      * Get configuration value (stored in core.properties) for the specified key. 
      * This method assures thread-safe cache initialization.

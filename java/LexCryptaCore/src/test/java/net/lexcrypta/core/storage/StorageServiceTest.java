@@ -19,10 +19,15 @@ package net.lexcrypta.core.storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.util.Base64;
+import java.util.Date;
+import java.util.Properties;
+import net.lexcrypta.core.conf.CoreHelper;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -44,6 +49,8 @@ public class StorageServiceTest {
 
     @After
     public void tearDown() {
+        CoreHelper.setCoreProps(null);
+        CoreHelper.setQueriesProps(null);
     }
 
     @Test
@@ -108,26 +115,46 @@ public class StorageServiceTest {
     }
     
     @Test
+    public void testGetTargetDirPath() {
+        StorageService service = new StorageService();
+        Properties props = new Properties();
+        props.setProperty("storage.basePath", "/lexcrypta/java/iutest/getTargetDirPath");
+        CoreHelper.setCoreProps(props);
+
+        String suffix = service.sdf.format(new Date());
+        assertEquals("/lexcrypta/java/iutest/getTargetDirPath" + File.separator + suffix, service.getTargetDirPath());
+    }
+    
+    @Test
     public void testDoEncryptContent() throws Exception {
         ByteArrayInputStream noTestedBais = new ByteArrayInputStream(new byte[512]);
         File noTestedTempFile = File.createTempFile("dummy", ".aes");
 
         StorageService service = new StorageService();
+        Properties props = new Properties();
+        props.setProperty("storage.basePath", noTestedTempFile.getParent());
+        CoreHelper.setCoreProps(props);
         
         String seed = "123456";
         byte[] key = new CryptoHelper().getNewKey();
         byte[] iv =  service.getIv(seed);
         byte[] id = service.encryptString(seed, iv, key);
-        byte[] encryptedPath = service.encryptString(noTestedTempFile.getPath(), iv, key);
         
-        EncryptedData ed = service.doEncryptContent(noTestedBais, noTestedTempFile,
+        EncryptedData ed = service.doEncryptContent(noTestedBais, 
                 seed, key);
         
+        //key is not stored (anywhere)
         assertArrayEquals(key, ed.getKey());
+        //id is encrypted seed and is stored in database besides encrypted path
         assertArrayEquals(id, ed.getId());
-        assertArrayEquals(encryptedPath, ed.getEncryptedPath());
-        
-        
+        //encrypted path = encrypted(<storage.basePath> + "/" + <yyyyMMdd> + "/" + <undetermined>)
+        byte[] encryptedPath = ed.getEncryptedPath();
+        //target path = <storage.basePath> + "/" + <yyyyMMdd>
+        String suffix = service.sdf.format(new Date());
+        String targetPath = noTestedTempFile.getParent() + File.separator + suffix;
+        String path = service.decryptString(encryptedPath, iv, key);
+        assertTrue(path.startsWith(targetPath + File.separator));
+        assertTrue(Files.exists(FileSystems.getDefault().getPath(path)));     
     }
     
     @Test
