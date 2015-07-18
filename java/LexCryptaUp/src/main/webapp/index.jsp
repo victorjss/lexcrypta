@@ -15,7 +15,7 @@
         <h1>Bienvenido a LEXCrypta</h1>
         <form action="upload" method="post" enctype="multipart/form-data">
             <fieldset>
-                <legend>Identificación del receptor (NIF por ejemplo)</legend>
+                <legend>Identificación del receptor</legend>
                 <label for="seed">ID del receptor: </label>
                 <input type="text" name="seed" maxlength="20" title="Identificación del recepetor, NIF por ejemplo"/>
             </fieldset>
