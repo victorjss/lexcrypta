@@ -57,6 +57,7 @@ public class DownServlet extends HttpServlet {
         InputStream is = service.decryptContent(seed, Base64.getDecoder().decode(key));
         if (is == null) {
             resp.sendRedirect("index.jsp");
+            return;
         }
         
         resp.setHeader("Content-Disposition", "attachment; filename=lexcrypta.file");
