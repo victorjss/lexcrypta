@@ -23,6 +23,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -102,7 +103,8 @@ public class CoreHelper {
     public DataSource getDataSource() {
         try {
             InitialContext cxt = new InitialContext();
-            DataSource ds = (DataSource) cxt.lookup(getConfigurationValue("jdbc.jndi"));
+            Context envContext = (Context)cxt.lookup("java:/comp/env");
+            DataSource ds = (DataSource) envContext.lookup(getConfigurationValue("jdbc.jndi"));
             return ds;
         } catch (NamingException e) {
             throw new RuntimeException(e);
