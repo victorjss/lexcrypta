@@ -17,7 +17,7 @@
             <fieldset>
                 <legend>Identificación del receptor (NIF por ejemplo)</legend>
                 <label for="seed">ID del receptor: </label>
-                <input type="text" name="seed" maxlength="20" title="Identificación del recpetor, NIF por ejemplo"/>
+                <input type="text" name="seed" maxlength="20" title="Identificación del recepetor, NIF por ejemplo"/>
             </fieldset>
             <fieldset>
                 <legend>Fichero a compartir</legend>
