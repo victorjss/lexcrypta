@@ -20,6 +20,7 @@ package net.lexcrypta.core.conf;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 import javax.naming.InitialContext;
@@ -33,7 +34,7 @@ import javax.sql.DataSource;
 public class CoreHelper {
     static volatile Properties queriesProps = null;
     static volatile Properties coreProps = null;
-    Connection testConnection = null;
+    String testConnectionString = null;
 
     public static Properties getQueriesProps() {
         return queriesProps;
@@ -77,12 +78,8 @@ public class CoreHelper {
         return props.getProperty(property);
     }
 
-    public Connection getTestConnection() {
-        return testConnection;
-    }
-
-    public void setTestConnection(Connection testConnection) {
-        this.testConnection = testConnection;
+    public void setTestConnectionString(String s) {
+        this.testConnectionString = s;
     }
     
     /**
@@ -91,8 +88,8 @@ public class CoreHelper {
      * @throws SQLException 
      */
     public Connection getConnection() throws SQLException {
-        if (testConnection != null) {
-            return testConnection;
+        if (testConnectionString != null) {
+            return DriverManager.getConnection(testConnectionString);
         }
         DataSource ds = getDataSource();
         return ds.getConnection();

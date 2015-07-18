@@ -70,6 +70,47 @@ public class StorageService {
     /**
      * Encrypt content, using AES with a random key and a Initialization Vector
      * generated from 'seed' parameter.
+     * This method returns the key used for encryption, and stores in database the
+     * pair ID-PATH that will allow to recover the orignal content only with 
+     * the returned key (see #doEncryptContent())
+     * @param content conted to be encrypted
+     * @param seed value used to genererate the AES Initialization Vector
+     * @return struct with reference info of encryptation result
+     * @see #doEncryptContent(java.io.InputStream, java.lang.String, byte[]) 
+     */
+    public byte[] encryptContent(InputStream content, String seed) {
+        try {
+            byte[] key = cryptoHelper.getNewKey();
+            EncryptedData ed = doEncryptContent(content, seed, key);
+
+            createDatabaseRecord(ed);
+            
+            return key;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected void createDatabaseRecord(EncryptedData ed)
+            throws RuntimeException {
+        try (
+                Connection conn = coreHelper.getConnection();
+                PreparedStatement ps = conn.prepareStatement(coreHelper.
+                        getSql(conn.getMetaData(), "insert-id-path-date"));) {
+            ps.setString(1, Base64.getEncoder().encodeToString(ed.getId()));
+            ps.setString(2, Base64.getEncoder().encodeToString(ed.
+                    getEncryptedPath()));
+            ps.setDate(3, new java.sql.Date(System.currentTimeMillis()));
+            if (1 != ps.executeUpdate()) {
+                throw new RuntimeException("Cannot insert data");
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * This method returns a EncryptedData structure with all the necessary 
      * information to allow storage in database. Encryted data is 
      * stored in file system without defined file name.
@@ -86,23 +127,6 @@ public class StorageService {
      * has such key. So if the server is compromised by an attacker, this one 
      * could not discover the path of a file associated to a database record or 
      * decrypt a file content (because the lack of keys).
-     * @param content conted to be encrypted
-     * @param seed value used to genererate the AES Initialization Vector
-     * @return struct with reference info of encryptation result
-     */
-    public EncryptedData encryptContent(InputStream content, String seed) {
-        try {
-            byte[] key = cryptoHelper.getNewKey();
-            return doEncryptContent(content, seed, key);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * This method was created/refactored for facilitating development
-     * of integration tests. 
-     * This method builds a EncryptedData structure from provided parameters.
      * @param content conted to be encrypted
      * @param seed value used to genererate the AES Initialization Vector
      * @param key AES key used for encryption
