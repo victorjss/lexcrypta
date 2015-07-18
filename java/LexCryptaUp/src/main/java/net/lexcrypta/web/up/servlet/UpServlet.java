@@ -56,7 +56,7 @@ public class UpServlet extends HttpServlet {
     protected String getDownloadUrl(String base64Key) {
         CoreHelper coreHelper = new CoreHelper();
         String downloadBaseUrl = coreHelper.getConfigurationValue("web.download.base.url");
-        String url = downloadBaseUrl + "/download?key=" + base64Key;
+        String url = downloadBaseUrl + "?key=" + base64Key;
         return url;
     }
 
