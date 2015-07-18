@@ -16,9 +16,19 @@
     
     <dependencies>
         <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>2.3.9</version>
+        </dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.36</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>LexCryptaCore</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>javax</groupId>
@@ -29,6 +39,17 @@
     </dependencies>
 
     <build>
+        <finalName>lexcryptadownload</finalName>
+        <filters>
+            <filter>${basedir}/${config.file}</filter>
+        </filters>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -48,6 +69,15 @@
                 <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <filters>
+                        <filter>${basedir}/${config.file}</filter>
+                    </filters>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/webapp</directory>
+                            <filtering>true</filtering>
+                        </resource>
+                    </webResources>
                 </configuration>
             </plugin>
             <plugin>
@@ -78,4 +108,21 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <config.file>mvn-dev.properties</config.file>
+            </properties>
+        </profile>
+        <profile>
+            <id>pro</id>
+            <properties>
+                <config.file>mvn-pro.properties</config.file>
+            </properties>
+        </profile>
+    </profiles>
 </project>
