@@ -12,19 +12,22 @@
         <title>LEXCrypta Upload page</title>
     </head>
     <body>
-        <h1>Bienvenido a LEXCrypta</h1>
-        <form action="upload" method="post" enctype="multipart/form-data">
-            <fieldset>
-                <legend>Identificación del receptor</legend>
-                <label for="seed">ID del receptor: </label>
-                <input type="text" name="seed" maxlength="20" title="Identificación del recepetor, NIF por ejemplo"/>
-            </fieldset>
-            <fieldset>
-                <legend>Fichero a compartir</legend>
-                <label for="lexfile">Fichero: </label>
-                <input type="file" name="lexfile"/>
-            </fieldset>
-            <input type="submit" name="Enviar"/>
-        </form>
+        <div id="body">
+            <h1>Bienvenido a LEXCrypta</h1>
+            <form action="upload" method="post" enctype="multipart/form-data">
+                <fieldset>
+                    <legend>Identificación del receptor</legend>
+                    <label for="seed">ID del receptor: </label>
+                    <input type="text" name="seed" maxlength="20" title="Identificación del recepetor, NIF por ejemplo"/>
+                </fieldset>
+                <fieldset>
+                    <legend>Fichero a compartir</legend>
+                    <label for="lexfile">Fichero: </label>
+                    <input type="file" name="lexfile"/>
+                </fieldset>
+                <input type="submit" name="Enviar"/>
+            </form>
+        </div>
+        <div id="footer">LEXCrypta: <a href="https://github.com/victorjss/lexcrypta">https://github.com/victorjss/lexcrypta</a></div>
     </body>
 </html>
