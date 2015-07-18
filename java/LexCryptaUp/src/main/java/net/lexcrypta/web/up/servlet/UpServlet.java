@@ -19,6 +19,8 @@ package net.lexcrypta.web.up.servlet;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Base64;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -56,8 +58,12 @@ public class UpServlet extends HttpServlet {
     protected String getDownloadUrl(String base64Key) {
         CoreHelper coreHelper = new CoreHelper();
         String downloadBaseUrl = coreHelper.getConfigurationValue("web.download.base.url");
-        String url = downloadBaseUrl + "?key=" + base64Key;
-        return url;
+        try {
+            return downloadBaseUrl + "?key=" + URLEncoder.encode(base64Key, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            //weird error, we hardcoded the encoding
+            throw new RuntimeException(e);
+        }
     }
 
     /**
