@@ -13,7 +13,7 @@
     </head>
     <body>
         <h1>Bienvenido a LEXCrypta</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data">
+        <form action="upload" method="post" enctype="multipart/form-data">
             <fieldset>
                 <legend>Identificación del receptor (NIF por ejemplo)</legend>
                 <label for="seed">ID del receptor: </label>

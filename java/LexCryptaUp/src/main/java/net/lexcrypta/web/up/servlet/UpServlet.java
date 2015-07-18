@@ -19,10 +19,7 @@ package net.lexcrypta.web.up.servlet;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -50,9 +47,10 @@ public class UpServlet extends HttpServlet {
         StorageService service = new StorageService();
         byte[] key = service.encryptContent(content, getSeed(req));
         String base64Key = Base64.getEncoder().encodeToString(key);
-        req.setAttribute("base64Key", base64Key);
+        req.getSession().setAttribute("base64Key", base64Key);
         String url = getDownloadUrl(base64Key);
-        req.setAttribute("url", url);
+        req.getSession().setAttribute("url", url);
+        resp.sendRedirect("result.jsp");
     }
 
     protected String getDownloadUrl(String base64Key) {
