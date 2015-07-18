@@ -28,7 +28,7 @@
                     %>
                     <input type="text" name="key" maxlength="256" title="Clave de cifrado, normalmente enviada por el usuario que subió el fichero" value="<%=key != null && !"".equals(key.trim()) ? key : ""%>"/>
                 </fieldset>
-                <input type="submit" name="Descargar"/>
+                <input type="submit" value="Descargar"/>
             </form>
         </div>
         <div id="footer">LEXCrypta: <a href="https://github.com/victorjss/lexcrypta">https://github.com/victorjss/lexcrypta</a></div>

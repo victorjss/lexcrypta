@@ -25,7 +25,7 @@
                     <label for="lexfile">Fichero: </label>
                     <input type="file" name="lexfile"/>
                 </fieldset>
-                <input type="submit" name="Enviar"/>
+                <input type="submit" value="Enviar"/>
             </form>
         </div>
         <div id="footer">LEXCrypta: <a href="https://github.com/victorjss/lexcrypta">https://github.com/victorjss/lexcrypta</a></div>
