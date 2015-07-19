@@ -136,6 +136,7 @@ public class StorageServiceTest {
     public void testDoEncryptContent() throws Exception {
         ByteArrayInputStream noTestedBais = new ByteArrayInputStream(new byte[512]);
         File noTestedTempFile = File.createTempFile("dummy", ".aes");
+        noTestedTempFile.deleteOnExit();
 
         StorageService service = new StorageService();
         Properties props = new Properties();
