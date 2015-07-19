@@ -14,7 +14,7 @@
     <body>
         <div id="body">
             <h1>Bienvenido a LEXCrypta</h1>
-            <form action="download" method="get" enctype="multipart/form-data">
+            <form action="download" method="get">
                 <fieldset>
                     <legend>Identificación del receptor</legend>
                     <label for="seed">ID del receptor: </label>
