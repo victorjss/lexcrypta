@@ -19,10 +19,11 @@ package net.lexcrypta.core.storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.Date;
 import java.util.Properties;
 import net.lexcrypta.core.conf.CoreHelper;
 import net.lexcrypta.core.crypto.CryptoHelper;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -233,6 +235,48 @@ public class StorageServiceTest {
         ps.close();
 
         assertEquals(path, service.getPathFromDatabase(encryptedSeed, iv, key));
+        
+        //close connection and database
+        c.close();
+    }
+
+    @Test
+    public void testGetContentFromFilesystem() throws Exception {
+        byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
+        byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
+        String plainText = "This is a encryption test!!!";
+        byte[] encryptedText = Base64.getDecoder().decode("zy2FE8sd/4WK3mMBVyay0GNYFa7CwZAkKWsqDRFf7og=");
+
+        StorageService service = new StorageService();
+        
+        String seed = "abcdefg";
+        byte[] encryptedSeed = service.encryptString(seed, iv, key);
+        String b64EncryptedSeed = Base64.getEncoder().encodeToString(encryptedSeed);
+        
+        File tmpFile = File.createTempFile("test", ".aes");
+        tmpFile.deleteOnExit();
+        String path = tmpFile.getPath();
+        byte[] encryptedPath = service.encryptString(path, iv, key);
+        String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
+        
+        FileOutputStream fos = new FileOutputStream(tmpFile);
+        IOUtils.copy(new ByteArrayInputStream(encryptedText), fos);        
+        
+        Class.forName("org.hsqldb.jdbcDriver");
+        service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
+        Connection c = service.coreHelper.getConnection();
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), creation DATE)");
+        ps.executeUpdate();
+        ps.close();
+        
+        ps = c.prepareStatement("INSERT INTO lexcrypta (id, filepath) VALUES (?, ?)");
+        ps.setString(1, b64EncryptedSeed); //id
+        ps.setString(2, b64EncryptedPath); //path
+        ps.executeUpdate();
+        ps.close();
+
+        InputStream decryptedContent = service.getContentFromFileSystem(encryptedSeed, iv, key);
+        assertArrayEquals(plainText.getBytes("utf-8"), IOUtils.toByteArray(decryptedContent));
         
         //close connection and database
         c.close();
