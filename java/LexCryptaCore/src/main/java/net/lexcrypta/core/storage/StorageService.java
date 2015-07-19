@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Properties;
@@ -278,7 +279,7 @@ public class StorageService {
             throw new IllegalArgumentException("seed too short");
         }
         try {
-            return rightPad(seed, '!').getBytes("utf-8");
+            return Arrays.copyOf(rightPad(seed, '!').getBytes("utf-8"), 16);
         } catch (UnsupportedEncodingException e) {
             //weird, hardcoded UTF-8
             throw new RuntimeException(e);

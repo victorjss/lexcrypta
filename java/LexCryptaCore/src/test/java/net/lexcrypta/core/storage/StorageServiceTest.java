@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Properties;
@@ -89,12 +90,15 @@ public class StorageServiceTest {
     public void testGetIv() throws Exception {
         String seed1 = "12345678";
         String seed2 = "12345678901234567890";
+        String seed3 = "áéíóúäëïöüàèìòù¢€ç[]"; //more than 16 bytes in utf-8 encoding
         
         StorageService service = new StorageService();
         
         assertArrayEquals("12345678!!!!!!!!".getBytes("utf-8"), service.getIv(seed1));
         assertArrayEquals("1234567890123456".getBytes("utf-8"), service.getIv(seed2));
-
+        byte[] ivSeed3 = service.getIv(seed3);
+        assertArrayEquals(Arrays.copyOf(seed3.getBytes("utf-8"), 16), ivSeed3);
+        
         try {
             service.getIv(null);
             fail("NullPointerExceptin expected");
