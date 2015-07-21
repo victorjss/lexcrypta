@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Properties;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import net.lexcrypta.core.conf.CoreHelper;
 import org.apache.commons.io.IOUtils;
@@ -229,6 +231,10 @@ public class StorageService {
             }
             
         } catch (IOException | SQLException e) {
+            if (e.getCause() instanceof IllegalBlockSizeException
+                    || e.getCause() instanceof BadPaddingException) { //usually bad IV/key
+                return null;
+            }
             throw new RuntimeException(e);
         }
         return null;
