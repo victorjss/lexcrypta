@@ -258,4 +258,52 @@ public class StorageServiceTest {
         //close connection and database
         c.close();
     }
+    
+    @Test
+    public void testDecryptContent() throws Exception {
+        String s = "this encrypted data (or not)!!!";
+        String s2 = "5Z46ZvFd6u7w1AAelahOQuladSXEcY0RVfEaF0lFsYs=";
+        String seed = "1234567890";
+        byte[] iv = "1234567890123456".getBytes("utf-8");
+        String skey = "BMoGsF9v6hoCv3R+lwR+2g==";
+        byte[] key = Base64.getDecoder().decode(skey);
+        String snewKey = "KraUKTyQWS9U/oDqupahCQ==";
+        byte[] newKey = Base64.getDecoder().decode(snewKey);
+
+        StorageService service = new StorageService();
+
+        File tmpFile = File.createTempFile("test", ".aes");
+        tmpFile.deleteOnExit();
+        String path = tmpFile.getPath();
+        byte[] encryptedPath = service.encryptString(path, iv, newKey);
+        String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
+        byte[] id = service.encryptString(seed, iv, newKey);
+        String b64Id = Base64.getEncoder().encodeToString(id);
+
+        FileOutputStream fos = new FileOutputStream(tmpFile);
+        IOUtils.copy(new ByteArrayInputStream(Base64.getDecoder().decode(s2)), fos);
+
+        Class.forName("org.hsqldb.jdbcDriver");
+        service.coreHelper.setTestConnectionString(
+                "jdbc:hsqldb:mem:testdb;shutdown=true");
+        Connection c = service.coreHelper.getConnection();
+        PreparedStatement ps = c.prepareStatement(
+                "CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), creation DATE)");
+        ps.executeUpdate();
+        ps.close();
+
+        ps = c.prepareStatement(
+                "INSERT INTO lexcrypta (id, filepath) VALUES (?, ?)");
+        ps.setString(1, b64Id); //id
+        ps.setString(2, b64EncryptedPath); //path
+        ps.executeUpdate();
+        ps.close();
+        
+        InputStream is = service.decryptContent(seed, key);
+        byte[] b = IOUtils.toByteArray(is);
+        assertEquals(s, new String(b, "utf-8"));
+        
+        //close connection and database
+        c.close();
+    }
 }

@@ -25,8 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,9 +34,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Properties;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import net.lexcrypta.core.conf.CoreHelper;
 import org.apache.commons.io.IOUtils;
@@ -190,7 +185,7 @@ public class StorageService {
 
             byte[] id = encryptString(seed, iv, newKey);
             
-            return getContentFromFileSystem(id, iv, key);
+            return getContentFromFileSystem(id, iv, newKey);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
