@@ -45,9 +45,18 @@ public class UpServlet extends HttpServlet {
             HttpServletResponse resp)
             throws ServletException, IOException {
         Part part = req.getPart("lexfile");
+        if (part == null || part.getSize() == 0) {
+            resp.sendRedirect("index.jsp");
+            return;
+        }
         InputStream content = part.getInputStream();
         StorageService service = new StorageService();
-        byte[] key = service.encryptContent(content, getSeed(req));
+        String seed = getSeed(req);
+        if (seed == null || "".equals(seed.trim()) || seed.length() < 6) {
+            resp.sendRedirect("index.jsp");
+            return;
+        }
+        byte[] key = service.encryptContent(content, seed);
         String base64Key = Base64.getEncoder().encodeToString(key);
         req.getSession().setAttribute("base64Key", base64Key);
         String url = getDownloadUrl(base64Key);
