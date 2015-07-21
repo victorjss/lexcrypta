@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,6 +36,9 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Properties;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import net.lexcrypta.core.crypto.CryptoHelper;
 import net.lexcrypta.core.conf.CoreHelper;
 import org.apache.commons.io.IOUtils;
@@ -60,7 +65,7 @@ public class StorageService {
      */
     public String rightPad(String s, char c) {
         StringBuilder sb = new StringBuilder(s);
-        final int keyLength = cryptoHelper.getKeyLength() / 8;
+        final int keyLength = CryptoHelper.IV_LENGTH / 8;
         final int niters = keyLength - s.length();
         for (int i = 0; i < niters; i++) {
             sb.append(c);
@@ -141,7 +146,11 @@ public class StorageService {
             throws IOException, FileNotFoundException {
         
         byte[] iv = getIv(seed);
-        InputStream encryptedStream = cryptoHelper.encrypt(content, iv, key);
+        
+        byte[] encryptedIv = cryptoHelper.encryptIv(iv, key);
+        byte[] newKey = Arrays.copyOf(encryptedIv, CryptoHelper.KEY_LENGTH / 8); //only first key size bytes (from a 16 bytes iv, the encrypted data is 128+128, being last 128 padding data
+        
+        InputStream encryptedStream = cryptoHelper.encrypt(content, iv, newKey);
         
         String targetDirPath = getTargetDirPath();
         File targetFile = getTargetFile(targetDirPath);
@@ -149,8 +158,8 @@ public class StorageService {
         FileOutputStream fos = new FileOutputStream(targetFile);
         IOUtils.copyLarge(encryptedStream, fos, new byte[512]);
         
-        byte[] id = encryptString(seed, iv, key);
-        byte[] encryptedPath = encryptString(targetFile.getPath(), iv, key);
+        byte[] id = encryptString(seed, iv, newKey);
+        byte[] encryptedPath = encryptString(targetFile.getPath(), iv, newKey);
         
         EncryptedData ed = new EncryptedData();
         ed.setKey(key);
@@ -175,7 +184,11 @@ public class StorageService {
     public InputStream decryptContent(String seed, byte[] key) {
         try {
             byte[] iv = getIv(seed);
-            byte[] id = encryptString(seed, iv, key);
+
+            byte[] encryptedIv = cryptoHelper.encryptIv(iv, key);
+            byte[] newKey = Arrays.copyOf(encryptedIv, CryptoHelper.KEY_LENGTH / 8); //only first key size bytes (from a 16 bytes iv, the encrypted data is 128+128, being last 128 padding data
+
+            byte[] id = encryptString(seed, iv, newKey);
             
             return getContentFromFileSystem(id, iv, key);
 
@@ -275,11 +288,8 @@ public class StorageService {
      * @return correct padded IV for AES use
      */
     protected byte[] getIv(String seed) {
-        if (seed.length() < 6) {
-            throw new IllegalArgumentException("seed too short");
-        }
         try {
-            return Arrays.copyOf(rightPad(seed, '!').getBytes("utf-8"), 16);
+            return cryptoHelper.fixIv(seed.getBytes("utf-8"));
         } catch (UnsupportedEncodingException e) {
             //weird, hardcoded UTF-8
             throw new RuntimeException(e);

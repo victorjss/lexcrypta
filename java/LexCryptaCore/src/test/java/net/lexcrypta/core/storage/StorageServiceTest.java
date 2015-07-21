@@ -89,39 +89,6 @@ public class StorageServiceTest {
     }
     
     @Test
-    public void testGetIv() throws Exception {
-        String seed1 = "12345678";
-        String seed2 = "12345678901234567890";
-        String seed3 = "áéíóúäëïöüàèìòù¢€ç[]"; //more than 16 bytes in utf-8 encoding
-        
-        StorageService service = new StorageService();
-        
-        assertArrayEquals("12345678!!!!!!!!".getBytes("utf-8"), service.getIv(seed1));
-        assertArrayEquals("1234567890123456".getBytes("utf-8"), service.getIv(seed2));
-        byte[] ivSeed3 = service.getIv(seed3);
-        assertArrayEquals(Arrays.copyOf(seed3.getBytes("utf-8"), 16), ivSeed3);
-        
-        try {
-            service.getIv(null);
-            fail("NullPointerExceptin expected");
-        } catch (NullPointerException expected) {
-            assertTrue(true);
-        }
-        try {
-            service.getIv("");
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException expected) {
-            assertTrue(true);
-        }
-        try {
-            service.getIv("123");
-            fail("IllegalArgumentException expected");
-        } catch (IllegalArgumentException expected) {
-            assertTrue(true);
-        }
-    }
-    
-    @Test
     public void testGetTargetDirPath() {
         StorageService service = new StorageService();
         Properties props = new Properties();
@@ -143,24 +110,33 @@ public class StorageServiceTest {
         props.setProperty("storage.basePath", noTestedTempFile.getParent());
         CoreHelper.setCoreProps(props);
         
+        CryptoHelper cryptoHelper = new CryptoHelper();
         String seed = "123456";
         byte[] key = new CryptoHelper().getNewKey();
         byte[] iv =  service.getIv(seed);
-        byte[] id = service.encryptString(seed, iv, key);
+        byte[] ivEncrypted = cryptoHelper.encryptIv(iv, key);
+        /**
+         * with a content of x bytes, cipher configured with pkcss5 padding will 
+         * creeate a encrypted content of x + 16 - x%16 bytes length (AES has a
+         * fixed 16-bytes block. This new key cannot be decrypted because we 
+         * have removed padding info.
+         */
+        byte[] newKey = Arrays.copyOf(ivEncrypted, CryptoHelper.KEY_LENGTH / 8); //new key of right lenght
+        byte[] id = service.encryptString(seed, iv, newKey);
         
         EncryptedData ed = service.doEncryptContent(noTestedBais, 
                 seed, key);
         
         //key is not stored (anywhere)
         assertArrayEquals(key, ed.getKey());
-        //id is encrypted seed and is stored in database besides encrypted path
+        //id is encrypted seed with key obtained from IV (fixed seed) ciphered with original key, and is stored in database besides encrypted path
         assertArrayEquals(id, ed.getId());
         //encrypted path = encrypted(<storage.basePath> + "/" + <yyyyMMdd> + "/" + <undetermined>)
         byte[] encryptedPath = ed.getEncryptedPath();
         //target path = <storage.basePath> + "/" + <yyyyMMdd>
-        String suffix = service.sdf.format(new Date());
+        String suffix = StorageService.sdf.format(new Date());
         String targetPath = noTestedTempFile.getParent() + File.separator + suffix;
-        String path = service.decryptString(encryptedPath, iv, key);
+        String path = service.decryptString(encryptedPath, iv, newKey);
         assertTrue(path.startsWith(targetPath + File.separator));
         assertTrue(Files.exists(FileSystems.getDefault().getPath(path)));     
     }

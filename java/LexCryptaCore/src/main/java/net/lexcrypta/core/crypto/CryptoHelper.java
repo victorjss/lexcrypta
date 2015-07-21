@@ -22,8 +22,10 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -36,7 +38,11 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class CryptoHelper {
     static final String AES_CBC_PKCS5PADDING = "AES/CBC/PKCS5Padding";
-    static final int KEY_LENGTH = 128;
+    static final String AES_ECB_PKCS5PADDING = "AES/ECB/PKCS5Padding"; //used for encrypt iv
+    public static final int KEY_LENGTH = 128;
+    public static final int IV_LENGTH = 128; //always on AES (128 block size, regardless key length)
+    public static final int MIN_IV_LENGTH = 6;
+    
     
     KeyGenerator keyGenerator;
 
@@ -49,15 +55,6 @@ public class CryptoHelper {
         }
     }
 
-    public String getAlgorithm() {
-        return AES_CBC_PKCS5PADDING;
-    }
-    
-    public int getKeyLength() {
-        return KEY_LENGTH;
-    }
-    
-    
     public SecretKey getNewSecretKey() {
         return keyGenerator.generateKey();
     }
@@ -79,13 +76,42 @@ public class CryptoHelper {
         return new SecretKeySpec(key, "AES");
     }
     
-    
+    public byte[] fixIv(byte[] iv) {
+        int ivBytes = IV_LENGTH / 8;
+        if (iv.length < MIN_IV_LENGTH) {
+            throw new IllegalArgumentException("IV must be at least 6 bytes long");
+        }
+        byte[] fixed = new byte[ivBytes];
+        
+        if (iv.length >= ivBytes) {
+            System.arraycopy(iv, 0, fixed, 0, ivBytes);
+        } else {
+            System.arraycopy(iv, 0, fixed, 0, iv.length);
+            for (int i = iv.length; i < ivBytes; i++) {
+                fixed[i] = iv[i % iv.length];
+            }
+        }
+        
+        return fixed;
+    }
+
     public InputStream decrypt(InputStream encryptedContent, byte[] iv, byte[] key) {
         try {
             Cipher aesCipher = Cipher.getInstance(AES_CBC_PKCS5PADDING);
             aesCipher.init(Cipher.DECRYPT_MODE, convertKey(key), new IvParameterSpec(iv));
             return new CipherInputStream(encryptedContent, aesCipher);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public byte[] encryptIv(byte[] iv, byte[] key) {
+        try {
+            Cipher aesIvCipher = Cipher.getInstance(AES_ECB_PKCS5PADDING);
+            aesIvCipher.init(Cipher.ENCRYPT_MODE, convertKey(key)); //ECB does not need IV
+            byte [] encryptedIv = aesIvCipher.doFinal(iv);
+            return encryptedIv;
+        } catch (BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
             throw new RuntimeException(e);
         }
     }
