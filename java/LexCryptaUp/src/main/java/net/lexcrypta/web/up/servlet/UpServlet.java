@@ -56,7 +56,7 @@ public class UpServlet extends HttpServlet {
             resp.sendRedirect("index.jsp");
             return;
         }
-        byte[] key = service.encryptContent(content, seed);
+        byte[] key = service.encryptContent(content, part.getSubmittedFileName(), seed);
         String base64Key = Base64.getEncoder().encodeToString(key);
         req.getSession().setAttribute("base64Key", base64Key);
         String url = getDownloadUrl(base64Key);

@@ -74,17 +74,18 @@ public class StorageService {
      * Encrypt content, using AES with a random key and a Initialization Vector
      * generated from 'seed' parameter.
      * This method returns the key used for encryption, and stores in database the
-     * pair ID-PATH that will allow to recover the orignal content only with 
+     * ID-PATH-NAME tupla that will allow to recover the orignal content only with 
      * the returned key (see #doEncryptContent())
      * @param content conted to be encrypted
+     * @param name name of the file
      * @param seed value used to genererate the AES Initialization Vector
      * @return struct with reference info of encryptation result
      * @see #doEncryptContent(java.io.InputStream, java.lang.String, byte[]) 
      */
-    public byte[] encryptContent(InputStream content, String seed) {
+    public byte[] encryptContent(InputStream content, String name, String seed) {
         try {
             byte[] key = cryptoHelper.getNewKey();
-            EncryptedData ed = doEncryptContent(content, seed, key);
+            EncryptedData ed = doEncryptContent(content, name, seed, key);
 
             createDatabaseRecord(ed);
             
@@ -99,11 +100,13 @@ public class StorageService {
         try (
                 Connection conn = coreHelper.getConnection();
                 PreparedStatement ps = conn.prepareStatement(coreHelper.
-                        getSql(conn.getMetaData(), "insert-id-path-date"));) {
+                        getSql(conn.getMetaData(), "insert-id-path-name-date"));) {
             ps.setString(1, Base64.getEncoder().encodeToString(ed.getId()));
             ps.setString(2, Base64.getEncoder().encodeToString(ed.
                     getEncryptedPath()));
-            ps.setDate(3, new java.sql.Date(System.currentTimeMillis()));
+            ps.setString(3, Base64.getEncoder().encodeToString(ed.
+                    getEncryptedName()));
+            ps.setDate(4, new java.sql.Date(System.currentTimeMillis()));
             if (1 != ps.executeUpdate()) {
                 throw new RuntimeException("Cannot insert data");
             }
@@ -118,19 +121,20 @@ public class StorageService {
      * information to allow storage in database. Encryted data is 
      * stored in file system without defined file name.
      * Returned data must be treated in this way:
-     * <ul><li>key must be stored NOWHERE, only must be in the shared URL</li>
-     * <li>id must be stored in database along encrypted path</li>
-     * <li>encryptedPath must be stored in database along id</li></ul>
-     * KEY is newly generated in each method invocation.
-     * ID is the encrypted seed, using a initialization vector based on seed 
-     * itself and built by #getIv(String). 
-     * PATH is encrypted with the same IV and KEY that the ID.
+     * <ul><li>key must be stored NOWHERE, only must exist in the shared URL</li>
+     * <li>id, encryptedPath and encryptedName must be stored in database</li></ul>
+     * With this data this methods builds a NEW KEY based on seed and applying the provided key.
+     * KEY is the provided key and must be regenerated in each method invocation (one-time use).
+     * ID is the encrypted seed, using the generated NEW KEY and an initialization vector based on seed 
+     * itself, built by #getIv(String). 
+     * PATH and NAME is encrypted with the same IV and NEW KEY as the ID.
      * With this protocol we are trying to avoid the possibility of recovering encrypted
-     * data because the key is never stored, only the owner of the shared URL 
+     * data because the original key is never stored, only the owner of the shared URL 
      * has such key. So if the server is compromised by an attacker, this one 
      * could not discover the path of a file associated to a database record or 
      * decrypt a file content (because the lack of keys).
      * @param content conted to be encrypted
+     * @param name file name
      * @param seed value used to genererate the AES Initialization Vector
      * @param key AES key used for encryption
      * @return struct with reference info of encryptation result
@@ -138,6 +142,7 @@ public class StorageService {
      * @throws FileNotFoundException 
      */
     protected EncryptedData doEncryptContent(InputStream content, 
+            String name,
             String seed,
             byte[] key)
             throws IOException, FileNotFoundException {
@@ -157,11 +162,13 @@ public class StorageService {
         
         byte[] id = encryptString(seed, iv, newKey);
         byte[] encryptedPath = encryptString(targetFile.getPath(), iv, newKey);
+        byte[] encryptedName = encryptString(name, iv, newKey);
         
         EncryptedData ed = new EncryptedData();
         ed.setKey(key);
         ed.setId(id);
         ed.setEncryptedPath(encryptedPath);
+        ed.setEncryptedName(encryptedName);
         
         return ed;
     }
@@ -175,10 +182,10 @@ public class StorageService {
      * Path recovered is encrypted using the same key an IV used for ID.
      * @param seed value used to genererate the AES Initialization Vector
      * @param key AES key used for encryption
-     * @return an InputStream with decrypted content or null if the file is not
+     * @return an DecryptData with decrypted content and file name, or null if the file is not
      * present (expired?)
      */
-    public InputStream decryptContent(String seed, byte[] key) {
+    public DecryptedData decryptContent(String seed, byte[] key) {
         try {
             byte[] iv = getIv(seed);
 
@@ -194,17 +201,25 @@ public class StorageService {
         }
     }
 
-    protected InputStream getContentFromFileSystem(byte[] id,
+    protected DecryptedData getContentFromFileSystem(byte[] id,
             byte[] iv,
             byte[] key) {
         
-        String path = getPathFromDatabase(id, iv, key);
+        String[] s = getPathAndNameFromDatabase(id, iv, key);
 
-        if (path != null) {
+        if (s[0] != null) {
             try {
-                FileInputStream fis = new FileInputStream(path);
+                FileInputStream fis = new FileInputStream(s[0]);
 
-                return cryptoHelper.decrypt(fis, iv, key);
+                DecryptedData dd = new DecryptedData();
+                
+                InputStream is = cryptoHelper.decrypt(fis, iv, key);
+                String fileName = s[1];
+                
+                dd.setContent(is);
+                dd.setFilaName(fileName);
+                
+                return dd;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -213,23 +228,26 @@ public class StorageService {
         }
     }
 
-    protected String getPathFromDatabase(byte[] id,
+    protected String[] getPathAndNameFromDatabase(byte[] id,
             byte[] iv,
             byte[] key)
             throws RuntimeException {
         String idBase64 = Base64.getEncoder().encodeToString(id);
         try (
                 Connection conn = coreHelper.getConnection(); 
-                PreparedStatement ps = conn.prepareStatement(coreHelper.getSql(conn.getMetaData(), "select-path"));) {
+                PreparedStatement ps = conn.prepareStatement(coreHelper.getSql(conn.getMetaData(), "select-path-name"));) {
             ps.setString(1, idBase64);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
             
                 String encryptedPathBase64 = rs.getString(1);
-                return decryptDatabasePath(encryptedPathBase64, iv, key);
-
+                String encryptedNameBase64 = rs.getString(2);
+                return new String[] {
+                    decryptDatabaseString(encryptedPathBase64, iv, key),
+                    decryptDatabaseString(encryptedNameBase64, iv, key)
+                };
             }
-            
+
         } catch (IOException | SQLException e) {
             if (e.getCause() instanceof IllegalBlockSizeException
                     || e.getCause() instanceof BadPaddingException) { //usually bad IV/key
@@ -240,13 +258,12 @@ public class StorageService {
         return null;
     }
 
-    protected String decryptDatabasePath(String encryptedPathBase64,
+    protected String decryptDatabaseString(String encryptedStringBase64,
             byte[] iv,
             byte[] key)
             throws IOException {
-        byte[] encryptedPath = Base64.getDecoder().decode(encryptedPathBase64);
-        String path = decryptString(encryptedPath, iv, key);
-        return path;
+        byte[] encryptedString = Base64.getDecoder().decode(encryptedStringBase64);
+        return decryptString(encryptedString, iv, key);
     }
 
     protected File getTargetFile(String targetDirPath)

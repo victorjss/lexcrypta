@@ -123,15 +123,18 @@ public class StorageServiceTest {
          */
         byte[] newKey = Arrays.copyOf(ivEncrypted, CryptoHelper.KEY_LENGTH / 8); //new key of right lenght
         byte[] id = service.encryptString(seed, iv, newKey);
+        byte [] encryptedFileName = service.encryptString(noTestedTempFile.getName(), iv, newKey);
         
-        EncryptedData ed = service.doEncryptContent(noTestedBais, 
+        EncryptedData ed = service.doEncryptContent(noTestedBais, noTestedTempFile.getName(),
                 seed, key);
         
         //key is not stored (anywhere)
         assertArrayEquals(key, ed.getKey());
-        //id is encrypted seed with key obtained from IV (fixed seed) ciphered with original key, and is stored in database besides encrypted path
+
+        //id is encrypted seed with the new key obtained from IV (fixed seed) ciphered with original key, and is stored in database along encrypted path and file name
         assertArrayEquals(id, ed.getId());
-        //encrypted path = encrypted(<storage.basePath> + "/" + <yyyyMMdd> + "/" + <undetermined>)
+        
+        //encrypted path = encrypted(<storage.basePath> + "/" + <yyyyMMdd> + "/" + <undetermined>), where "encrypted" uses the new key for doing encryption
         byte[] encryptedPath = ed.getEncryptedPath();
         //target path = <storage.basePath> + "/" + <yyyyMMdd>
         String suffix = StorageService.sdf.format(new Date());
@@ -139,6 +142,9 @@ public class StorageServiceTest {
         String path = service.decryptString(encryptedPath, iv, newKey);
         assertTrue(path.startsWith(targetPath + File.separator));
         assertTrue(Files.exists(FileSystems.getDefault().getPath(path)));     
+        
+        //file name is encrypted with the new key
+        assertArrayEquals(encryptedFileName, ed.getEncryptedName());
     }
     
     @Test
@@ -154,29 +160,34 @@ public class StorageServiceTest {
         
         String path = "/lexcrypta/java/iutest/createDatabaseRecord";
         byte[] encryptedPath = service.encryptString(path, iv, key);
+        String fileName = "filename.test";
+        byte[] encryptedName = service.encryptString(fileName, iv, key);
         String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
+        String b64EncryptedName = Base64.getEncoder().encodeToString(encryptedName);
         
         Class.forName("org.hsqldb.jdbcDriver");
         service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
-        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), creation DATE)");
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
         ps.executeUpdate();
 
         EncryptedData ed = new EncryptedData();
         ed.setId(encryptedSeed);
         ed.setKey(key);
         ed.setEncryptedPath(encryptedPath);
+        ed.setEncryptedName(encryptedName);
         
         service.createDatabaseRecord(ed);
         
         //test database result
-        ps = c.prepareStatement("SELECT id, filepath, creation FROM lexcrypta");
+        ps = c.prepareStatement("SELECT id, filepath, filename, creation FROM lexcrypta");
         ResultSet rs = ps.executeQuery();
         assertTrue(rs.next());
         assertEquals(b64EncryptedSeed, rs.getString(1));
         assertEquals(b64EncryptedPath, rs.getString(2));
-        assertNotNull(rs.getDate(3));
-        assertTrue(rs.getDate(3).getTime() <= System.currentTimeMillis());
+        assertEquals(b64EncryptedName, rs.getString(3));
+        assertNotNull(rs.getDate(4));
+        assertTrue(rs.getDate(4).getTime() <= System.currentTimeMillis());
         assertFalse(rs.next());
         
         //close connection and database
@@ -184,7 +195,7 @@ public class StorageServiceTest {
     }
     
     @Test
-    public void testGetPathFromDatabase() throws Exception {
+    public void testGetPathAndNameFromDatabase() throws Exception {
         byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
         byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
         
@@ -198,20 +209,25 @@ public class StorageServiceTest {
         byte[] encryptedPath = service.encryptString(path, iv, key);
         String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
         
+        String fileName = "filename.test";
+        byte[] encryptedName = service.encryptString(fileName, iv, key);
+        String b64EncryptedName = Base64.getEncoder().encodeToString(encryptedName);
+        
         Class.forName("org.hsqldb.jdbcDriver");
         service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
-        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), creation DATE)");
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
         ps.executeUpdate();
         ps.close();
         
-        ps = c.prepareStatement("INSERT INTO lexcrypta (id, filepath) VALUES (?, ?)");
+        ps = c.prepareStatement("INSERT INTO lexcrypta (id, filepath, filename) VALUES (?, ?, ?)");
         ps.setString(1, b64EncryptedSeed); //id
         ps.setString(2, b64EncryptedPath); //path
+        ps.setString(3, b64EncryptedName); //path
         ps.executeUpdate();
         ps.close();
 
-        assertEquals(path, service.getPathFromDatabase(encryptedSeed, iv, key));
+        assertArrayEquals(new String[] {path, fileName}, service.getPathAndNameFromDatabase(encryptedSeed, iv, key));
         
         //close connection and database
         c.close();
@@ -235,6 +251,8 @@ public class StorageServiceTest {
         String path = tmpFile.getPath();
         byte[] encryptedPath = service.encryptString(path, iv, key);
         String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
+        byte[] encryptedName = service.encryptString(tmpFile.getName(), iv, key);
+        String b64EncryptedName = Base64.getEncoder().encodeToString(encryptedName);
         
         FileOutputStream fos = new FileOutputStream(tmpFile);
         IOUtils.copy(new ByteArrayInputStream(encryptedText), fos);        
@@ -242,18 +260,20 @@ public class StorageServiceTest {
         Class.forName("org.hsqldb.jdbcDriver");
         service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
-        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), creation DATE)");
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
         ps.executeUpdate();
         ps.close();
         
-        ps = c.prepareStatement("INSERT INTO lexcrypta (id, filepath) VALUES (?, ?)");
+        ps = c.prepareStatement("INSERT INTO lexcrypta (id, filepath, filename) VALUES (?, ?, ?)");
         ps.setString(1, b64EncryptedSeed); //id
         ps.setString(2, b64EncryptedPath); //path
+        ps.setString(3, b64EncryptedName); //name
         ps.executeUpdate();
         ps.close();
 
-        InputStream decryptedContent = service.getContentFromFileSystem(encryptedSeed, iv, key);
-        assertArrayEquals(plainText.getBytes("utf-8"), IOUtils.toByteArray(decryptedContent));
+        DecryptedData dd = service.getContentFromFileSystem(encryptedSeed, iv, key);
+        assertArrayEquals(plainText.getBytes("utf-8"), IOUtils.toByteArray(dd.getContent()));
+        assertEquals(tmpFile.getName(), dd.getFilaName());
         
         //close connection and database
         c.close();
@@ -277,6 +297,8 @@ public class StorageServiceTest {
         String path = tmpFile.getPath();
         byte[] encryptedPath = service.encryptString(path, iv, newKey);
         String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
+        byte[] encryptedName = service.encryptString(tmpFile.getName(), iv, newKey);
+        String b64EncryptedName = Base64.getEncoder().encodeToString(encryptedName);
         byte[] id = service.encryptString(seed, iv, newKey);
         String b64Id = Base64.getEncoder().encodeToString(id);
 
@@ -288,20 +310,22 @@ public class StorageServiceTest {
                 "jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
         PreparedStatement ps = c.prepareStatement(
-                "CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), creation DATE)");
+                "CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
         ps.executeUpdate();
         ps.close();
 
         ps = c.prepareStatement(
-                "INSERT INTO lexcrypta (id, filepath) VALUES (?, ?)");
+                "INSERT INTO lexcrypta (id, filepath, filename) VALUES (?, ?, ?)");
         ps.setString(1, b64Id); //id
         ps.setString(2, b64EncryptedPath); //path
+        ps.setString(3, b64EncryptedName); //name
         ps.executeUpdate();
         ps.close();
         
-        InputStream is = service.decryptContent(seed, key);
-        byte[] b = IOUtils.toByteArray(is);
+        DecryptedData dd = service.decryptContent(seed, key);
+        byte[] b = IOUtils.toByteArray(dd.getContent());
         assertEquals(s, new String(b, "utf-8"));
+        assertEquals(tmpFile.getName(), dd.getFilaName());
         
         //close connection and database
         c.close();

@@ -30,6 +30,7 @@ public class EncryptedData {
     byte[] key;
     byte[] id;
     byte[] encryptedPath;
+    byte[] encryptedName;
 
     public byte[] getKey() {
         return key;
@@ -53,6 +54,14 @@ public class EncryptedData {
 
     public void setEncryptedPath(byte[] encryptedPath) {
         this.encryptedPath = encryptedPath;
+    }
+
+    public byte[] getEncryptedName() {
+        return encryptedName;
+    }
+
+    public void setEncryptedName(byte[] encryptedName) {
+        this.encryptedName = encryptedName;
     }
     
     

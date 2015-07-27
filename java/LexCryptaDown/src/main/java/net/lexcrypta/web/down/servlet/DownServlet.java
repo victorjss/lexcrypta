@@ -26,6 +26,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.lexcrypta.core.storage.DecryptedData;
 import net.lexcrypta.core.storage.StorageService;
 import org.apache.commons.io.IOUtils;
 
@@ -54,14 +55,14 @@ public class DownServlet extends HttpServlet {
         }
         
         StorageService service = new StorageService();
-        InputStream is = service.decryptContent(seed, Base64.getDecoder().decode(key));
-        if (is == null) {
+        DecryptedData dd = service.decryptContent(seed, Base64.getDecoder().decode(key));
+        if (dd == null) {
             resp.sendRedirect("index.jsp");
             return;
         }
         
-        resp.setHeader("Content-Disposition", "attachment; filename=lexcrypta.file");
-        IOUtils.copyLarge(is, resp.getOutputStream());
+        resp.setHeader("Content-Disposition", "attachment; filename=" + dd.getFilaName());
+        IOUtils.copyLarge(dd.getContent(), resp.getOutputStream());
     }
 
 }
