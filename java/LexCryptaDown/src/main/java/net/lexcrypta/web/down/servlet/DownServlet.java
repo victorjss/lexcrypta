@@ -45,7 +45,8 @@ public class DownServlet extends HttpServlet {
         String seed = req.getParameter("seed");
         
         if (key == null || seed == null
-                || "".equals(key.trim()) || "".equals(seed.trim())) {
+                || "".equals(key.trim()) || "".equals(seed.trim())
+                || seed.length() < 6) {
             if (key != null && !"".equals(key.trim())) {
                 req.getSession().setAttribute("key", key);
             }
