@@ -10,6 +10,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>LEXCrypta Download page</title>
+        <link type="text/css" href="css/lexcrypta.css" rel="stylesheet"/>
     </head>
     <body>
         <div id="body">
@@ -17,18 +18,25 @@
             <form action="download" method="get">
                 <fieldset>
                     <legend>Identificación del receptor</legend>
-                    <label for="seed">ID del receptor: </label>
-                    <input type="text" name="seed" maxlength="20" title="Identificación del recepetor (NIF, email,...)"/>
+                    <div class="center">
+                        <label for="seed">ID del receptor: </label>
+                        <input id="seed" class="text" type="text" name="seed" maxlength="20" title="Identificación del recepetor (NIF, email,...)"/>
+                    </div>
+                    <span id="advice-text">Este ID deben habérselo proporcionado el remitente del mensaje por un canal diferente al de la clave o URL de descarga</span>
                 </fieldset>
                 <fieldset>
                     <legend>Clave de cifrado</legend>
-                    <label for="key">Clave: </label>
-                    <%
-                    String key = (String)session.getAttribute("key");
-                    %>
-                    <input type="text" name="key" maxlength="256" title="Clave de cifrado, normalmente enviada por el usuario que subió el fichero" value="<%=key != null && !"".equals(key.trim()) ? key : ""%>"/>
+                    <div class="center">
+                        <label for="key">Clave: </label>
+                        <%
+                        String key = (String)session.getAttribute("key");
+                        %>
+                        <input id="key" class="text" type="text" name="key" maxlength="256" size="32" title="Clave de cifrado, normalmente enviada por el usuario que subió el fichero" value="<%=key != null && !"".equals(key.trim()) ? key : ""%>"/>
+                    </div>
                 </fieldset>
-                <input type="submit" value="Descargar"/>
+                <div class="center">
+                    <input type="submit" value="Descargar" class="button"/>
+                </div>
             </form>
         </div>
         <div id="footer">LEXCrypta: <a href="https://github.com/victorjss/lexcrypta">https://github.com/victorjss/lexcrypta</a></div>

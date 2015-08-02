@@ -10,11 +10,14 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Error 40x</title>
+        <link type="text/css" href="css/lexcrypta.css" rel="stylesheet"/>
     </head>
     <body>
-        <h1>Error de navegación</h1>
-        <span id="error400">
-        Este contenido o no existe o no se puede acceder como lo ha intentado... ¿Ha utilizado los cauces estándar para llegar aquí?
-        </span>
+        <div id="body">
+            <h1>Error de navegación</h1>
+            <span id="error400">
+            Este contenido o no existe o no se puede acceder como lo ha intentado... ¿Ha utilizado los cauces estándar para llegar aquí?
+            </span>
+        </div>
     </body>
 </html>

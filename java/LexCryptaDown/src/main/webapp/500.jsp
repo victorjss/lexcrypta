@@ -10,11 +10,14 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Error 500</title>
+        <link type="text/css" href="css/lexcrypta.css" rel="stylesheet"/>
     </head>
     <body>
-        <h1>Error interno</h1>
-        <span id="error500">
-        Vaya, este error no lo esperábamos... Inténtelo de nuevo y si continúa fallando, póngase en contacto con los responsables.
-        </span>
+        <div id="body">
+            <h1>Error interno</h1>
+            <span id="error500">
+            Vaya, este error no lo esperábamos... Inténtelo de nuevo y si continúa fallando, póngase en contacto con los responsables.
+            </span>
+        </div>
     </body>
 </html>
