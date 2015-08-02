@@ -43,7 +43,7 @@
                 <fieldset>
                     <legend>Fichero a compartir</legend>
                     <div class="center">
-                        <label for="lexfile">Fichero: </label>
+                        <label for="lexfile">Fichero (5 MB máximo): </label>
                         <input id="lexfile" type="file" name="lexfile"/>
                     </div>
                 </fieldset>
