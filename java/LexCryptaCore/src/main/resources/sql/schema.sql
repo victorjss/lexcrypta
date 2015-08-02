@@ -1,4 +1,4 @@
 --MySQL
-CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048) NOT NULL, filename VARCHAR(512) NOT NULL, creation DATE NOT NULL, PRIMARY KEY (id));
+CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048) NOT NULL, filename VARCHAR(512) NOT NULL, PRIMARY KEY (id));
 
 

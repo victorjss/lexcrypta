@@ -100,13 +100,12 @@ public class StorageService {
         try (
                 Connection conn = coreHelper.getConnection();
                 PreparedStatement ps = conn.prepareStatement(coreHelper.
-                        getSql(conn.getMetaData(), "insert-id-path-name-date"));) {
+                        getSql(conn.getMetaData(), "insert-id-path-name"));) {
             ps.setString(1, Base64.getEncoder().encodeToString(ed.getId()));
             ps.setString(2, Base64.getEncoder().encodeToString(ed.
                     getEncryptedPath()));
             ps.setString(3, Base64.getEncoder().encodeToString(ed.
                     getEncryptedName()));
-            ps.setDate(4, new java.sql.Date(System.currentTimeMillis()));
             if (1 != ps.executeUpdate()) {
                 throw new RuntimeException("Cannot insert data");
             }

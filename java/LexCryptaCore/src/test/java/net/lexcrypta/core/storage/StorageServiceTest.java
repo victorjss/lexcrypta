@@ -20,7 +20,6 @@ package net.lexcrypta.core.storage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.sql.Connection;
@@ -168,7 +167,7 @@ public class StorageServiceTest {
         Class.forName("org.hsqldb.jdbcDriver");
         service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
-        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512))");
         ps.executeUpdate();
 
         EncryptedData ed = new EncryptedData();
@@ -180,14 +179,12 @@ public class StorageServiceTest {
         service.createDatabaseRecord(ed);
         
         //test database result
-        ps = c.prepareStatement("SELECT id, filepath, filename, creation FROM lexcrypta");
+        ps = c.prepareStatement("SELECT id, filepath, filename FROM lexcrypta");
         ResultSet rs = ps.executeQuery();
         assertTrue(rs.next());
         assertEquals(b64EncryptedSeed, rs.getString(1));
         assertEquals(b64EncryptedPath, rs.getString(2));
         assertEquals(b64EncryptedName, rs.getString(3));
-        assertNotNull(rs.getDate(4));
-        assertTrue(rs.getDate(4).getTime() <= System.currentTimeMillis());
         assertFalse(rs.next());
         
         //close connection and database
@@ -216,7 +213,7 @@ public class StorageServiceTest {
         Class.forName("org.hsqldb.jdbcDriver");
         service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
-        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512))");
         ps.executeUpdate();
         ps.close();
         
@@ -260,7 +257,7 @@ public class StorageServiceTest {
         Class.forName("org.hsqldb.jdbcDriver");
         service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
-        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512))");
         ps.executeUpdate();
         ps.close();
         
@@ -310,7 +307,7 @@ public class StorageServiceTest {
                 "jdbc:hsqldb:mem:testdb;shutdown=true");
         Connection c = service.coreHelper.getConnection();
         PreparedStatement ps = c.prepareStatement(
-                "CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512), creation DATE)");
+                "CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512))");
         ps.executeUpdate();
         ps.close();
 
