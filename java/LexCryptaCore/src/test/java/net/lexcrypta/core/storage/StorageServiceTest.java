@@ -340,6 +340,18 @@ public class StorageServiceTest {
             assertFalse("Unexpected exception: " + unexpected.getMessage(), true);
         }
         
+        try {
+            assertNull(service.getContentFromFileSystem(encryptedSeed, "invalid iv".getBytes(), key));
+        } catch (Exception unexpected) {
+            assertFalse("Unexpected exception: " + unexpected.getMessage(), true);
+        }
+        
+        try {
+            assertNull(service.getContentFromFileSystem(encryptedSeed, iv, "invalid key".getBytes()));
+        } catch (Exception unexpected) {
+            assertFalse("Unexpected exception: " + unexpected.getMessage(), true);
+        }
+        
         //close connection and database
         c.close();
     }
