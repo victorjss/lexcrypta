@@ -41,21 +41,28 @@ public class DownServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req,
             HttpServletResponse resp)
             throws ServletException, IOException {
-        String key = req.getParameter("key");
+        String base64Key = req.getParameter("key");
         String seed = req.getParameter("seed");
         
-        if (key == null || seed == null
-                || "".equals(key.trim()) || "".equals(seed.trim())
+        if (base64Key == null || seed == null
+                || "".equals(base64Key.trim()) || "".equals(seed.trim())
                 || seed.length() < 6) {
-            if (key != null && !"".equals(key.trim())) {
-                req.getSession().setAttribute("key", key);
+            if (base64Key != null && !"".equals(base64Key.trim())) {
+                req.getSession().setAttribute("key", base64Key);
             }
             resp.sendRedirect("index.jsp");
             return;
         }
         
         StorageService service = new StorageService();
-        DecryptedData dd = service.decryptContent(seed, Base64.getDecoder().decode(key));
+        byte[] key = null;
+        try {
+            key = Base64.getDecoder().decode(base64Key);
+        } catch (IllegalArgumentException e) { //bad key
+            resp.sendRedirect("index.jsp");
+            return;
+        }
+        DecryptedData dd = service.decryptContent(seed, key);
         if (dd == null) {
             resp.sendRedirect("index.jsp");
             return;
