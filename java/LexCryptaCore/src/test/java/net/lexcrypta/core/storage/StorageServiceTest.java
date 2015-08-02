@@ -231,6 +231,26 @@ public class StorageServiceTest {
     }
 
     @Test
+    public void testGetPathAndNameFromDatabaseWhenNullReturned() throws Exception {
+        byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
+        byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
+        
+        StorageService service = new StorageService();
+        
+        Class.forName("org.hsqldb.jdbcDriver");
+        service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
+        Connection c = service.coreHelper.getConnection();
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512))");
+        ps.executeUpdate();
+        ps.close();
+        
+        assertNull(service.getPathAndNameFromDatabase("dummyname".getBytes(), iv, key));
+        
+        //close connection and database
+        c.close();
+    }
+
+    @Test
     public void testGetContentFromFilesystem() throws Exception {
         byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
         byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
@@ -271,6 +291,54 @@ public class StorageServiceTest {
         DecryptedData dd = service.getContentFromFileSystem(encryptedSeed, iv, key);
         assertArrayEquals(plainText.getBytes("utf-8"), IOUtils.toByteArray(dd.getContent()));
         assertEquals(tmpFile.getName(), dd.getFilaName());
+        
+        //close connection and database
+        c.close();
+    }
+    
+    @Test
+    public void testGetContentFromFilesystemWithInvalidParameters() throws Exception {
+        byte[] iv = "12345678Z0000000".getBytes("utf-8"); //128 bits = 16 bytes
+        byte[] key = Base64.getDecoder().decode("mVMtHSqtTHF3JBaXoaA+/Q==");
+        String plainText = "This is a encryption test!!!";
+        byte[] encryptedText = Base64.getDecoder().decode("zy2FE8sd/4WK3mMBVyay0GNYFa7CwZAkKWsqDRFf7og=");
+
+        StorageService service = new StorageService();
+        
+        String seed = "abcdefg";
+        byte[] encryptedSeed = service.encryptString(seed, iv, key);
+        String b64EncryptedSeed = Base64.getEncoder().encodeToString(encryptedSeed);
+        
+        File tmpFile = File.createTempFile("test", ".aes");
+        tmpFile.deleteOnExit();
+        String path = tmpFile.getPath();
+        byte[] encryptedPath = service.encryptString(path, iv, key);
+        String b64EncryptedPath = Base64.getEncoder().encodeToString(encryptedPath);
+        byte[] encryptedName = service.encryptString(tmpFile.getName(), iv, key);
+        String b64EncryptedName = Base64.getEncoder().encodeToString(encryptedName);
+        
+        FileOutputStream fos = new FileOutputStream(tmpFile);
+        IOUtils.copy(new ByteArrayInputStream(encryptedText), fos);        
+        
+        Class.forName("org.hsqldb.jdbcDriver");
+        service.coreHelper.setTestConnectionString("jdbc:hsqldb:mem:testdb;shutdown=true");
+        Connection c = service.coreHelper.getConnection();
+        PreparedStatement ps = c.prepareStatement("CREATE TABLE lexcrypta (id VARCHAR(512), filepath VARCHAR(2048), filename VARCHAR(512))");
+        ps.executeUpdate();
+        ps.close();
+        
+        ps = c.prepareStatement("INSERT INTO lexcrypta (id, filepath, filename) VALUES (?, ?, ?)");
+        ps.setString(1, b64EncryptedSeed); //id
+        ps.setString(2, b64EncryptedPath); //path
+        ps.setString(3, b64EncryptedName); //name
+        ps.executeUpdate();
+        ps.close();
+
+        try {
+            assertNull(service.getContentFromFileSystem("invalid seed".getBytes(), iv, key));
+        } catch (Exception unexpected) {
+            assertFalse("Unexpected exception: " + unexpected.getMessage(), true);
+        }
         
         //close connection and database
         c.close();

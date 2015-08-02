@@ -206,7 +206,7 @@ public class StorageService {
         
         String[] s = getPathAndNameFromDatabase(id, iv, key);
 
-        if (s[0] != null) {
+        if (s != null) {
             try {
                 FileInputStream fis = new FileInputStream(s[0]);
 
