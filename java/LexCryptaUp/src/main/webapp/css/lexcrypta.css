@@ -1,0 +1,71 @@
+/*
+Copyright (C) 2015 Víctor Suárez <victorjss@gmail.com>
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+/* 
+    Created on : 02-ago-2015, 18:11:39
+    Author     : Víctor Suárez <victorjss@gmail.com>
+*/
+
+html {
+    font-family: verdana;
+    font-size: 12px;
+    
+}
+
+#body {
+    border-radius: 25px;
+    border: 2px solid rosybrown;
+    width: 420px;
+    margin: auto;
+    padding: 10px;
+    overflow: auto;
+}
+
+#body h1 {
+    text-align: center;
+}
+
+#body fieldset {
+    border-radius: 15px;
+    border: 2px solid burlywood;
+    margin-bottom: 2em;
+    margin-top: 2em;
+}
+
+#body fieldset legend {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.center {
+    text-align: center;
+}
+
+.button {
+    border-radius: 4px;
+    background: lightblue;
+}
+
+.right {
+    float: right;
+}
+
+
+#footer {
+    text-align: center;
+}
+

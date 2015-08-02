@@ -14,15 +14,16 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>LEXCrypta Upload page</title>
+        <link type="text/css" href="css/lexcrypta.css" rel="stylesheet"/>
     </head>
     <body>
         <script type="text/javascript">
             var seed = "<%=automaticSeed%>";
             function toggleAutomaticSeed() {
-                var is = document.getElementById ("input-seed");
+                var is = document.getElementById ("seed");
                 is.readOnly = !is.readOnly;
                 is.value = is.readOnly ? seed : "";
-                var bt = document.getElementById ("button-toggle");
+                var bt = document.getElementById ("toggle");
                 bt.value = is.readOnly ? "Manual" : "Automático";
                 return;
             }
@@ -33,18 +34,20 @@
                 <fieldset>
                     <legend>Identificación del envío</legend>
                     <label for="seed">ID del envío: </label>
-                    <input id="input-seed" type="text" name="seed" value="" maxlength="20" title="Identificación del envío: NIF, expediente, aleatorio,..."/>
-                    <input id="button-toggle" type="button" value="Automático" onclick="toggleAutomaticSeed()"/><br/>
-                    <span id="advice-text">No envíe por el mismo medio este ID y la clave que se generará en el siguiente paso</span>
+                    <input id="seed" type="text" name="seed" value="" maxlength="20" title="Identificación del envío: NIF, expediente, aleatorio,..."/>
+                    <input id="toggle" type="button" value="Automático" onclick="toggleAutomaticSeed()" class="button"/><br/>
+                    <span id="advice-text">No envíe por el mismo medio este ID y la clave de cifrado que se generará en el siguiente paso</span>
                 </fieldset>
                 <fieldset>
                     <legend>Fichero a compartir</legend>
                     <label for="lexfile">Fichero: </label>
-                    <input type="file" name="lexfile"/>
+                    <input id="lexfile" type="file" name="lexfile"/>
                 </fieldset>
-                <input type="submit" value="Enviar"/>
+                <div class="center">
+                    <input type="submit" value="Cifrar fichero" class="button"/>
+                </div>
             </form>
         </div>
-        <div id="footer">LEXCrypta: <a href="https://github.com/victorjss/lexcrypta">https://github.com/victorjss/lexcrypta</a></div>
+        <div id="footer">GitHub: <a href="https://github.com/victorjss/lexcrypta">https://github.com/victorjss/lexcrypta</a></div>
     </body>
 </html>
