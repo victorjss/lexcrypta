@@ -33,15 +33,19 @@
             <form action="upload" method="post" enctype="multipart/form-data">
                 <fieldset>
                     <legend>Identificación del envío</legend>
-                    <label for="seed">ID del envío: </label>
-                    <input id="seed" type="text" name="seed" value="" maxlength="20" title="Identificación del envío: NIF, expediente, aleatorio,..."/>
-                    <input id="toggle" type="button" value="Automático" onclick="toggleAutomaticSeed()" class="button"/><br/>
+                    <div class="center">
+                        <label for="seed">ID del envío: </label>
+                        <input id="seed" type="text" name="seed" value="" maxlength="20" title="Identificación del envío: NIF, expediente, aleatorio,..."/>
+                        <input id="toggle" type="button" value="Automático" onclick="toggleAutomaticSeed()" class="button"/><br/>
+                    </div>
                     <span id="advice-text">No envíe por el mismo medio este ID y la clave de cifrado que se generará en el siguiente paso</span>
                 </fieldset>
                 <fieldset>
                     <legend>Fichero a compartir</legend>
-                    <label for="lexfile">Fichero: </label>
-                    <input id="lexfile" type="file" name="lexfile"/>
+                    <div class="center">
+                        <label for="lexfile">Fichero: </label>
+                        <input id="lexfile" type="file" name="lexfile"/>
+                    </div>
                 </fieldset>
                 <div class="center">
                     <input type="submit" value="Cifrar fichero" class="button"/>
