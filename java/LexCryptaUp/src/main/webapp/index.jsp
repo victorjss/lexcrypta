@@ -38,7 +38,7 @@
                     <legend><%= rb.getString("index.id.legend") %></legend>
                     <div class="center">
                         <label for="seed"><%= rb.getString("index.id.label") %></label>
-                        <input id="seed" type="text" name="seed" value="" maxlength="20" title="<%= rb.getString("index.seed.description") %>"/>
+                        <input id="seed" type="text" name="seed" value="" maxlength="20" title="<%= rb.getString("index.id.description") %>"/>
                         <input id="toggle" type="button" value="<%= rb.getString("index.button.auto") %>" onclick="toggleAutomaticSeed()" class="button"/><br/>
                     </div>
                     <span id="advice-text"><%= rb.getString("index.id.advice") %></span>
