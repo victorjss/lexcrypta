@@ -14,12 +14,12 @@ La idea surgió de un amigo abogado (de ahí lo de "LEX") que me hacía comentar
 
 Todo esto no sería preocupante si no fuera porque estas transmisiones de documentos con un grado bastante alto de confidencialidad se hacen, la mayoría de la veces, por correo electrónico. No vamos a entrar en detalles técnicos pero el correo electrónico no es un medio seguro/confidencial de transmisión ya que no garantiza que la comunicación entre todos los nodos de la comunicación (clientes, nodos MTA o destinatarios) utilice canales cifrados. 
 
-Por esto surgió la idea de LEXCrypta, para crear una forma segura de transmitir estos documentos y que no fuese muy complicada de usar (los usuarios de LexNet sabrán a lo que me refiero). Y desde el principio también supe que el proyecto tenía que ser open source para garantizar la visibilidad de los algoritmos usados y permitir su revisión, correción y mejora por parte de la comunidad.
+Por esto surgió la idea de LEXCrypta: para crear una forma segura de transmitir estos documentos y que no fuese muy complicada de usar (los usuarios de LexNet sabrán a lo que me refiero). Desde el principio también supe que el proyecto tenía que ser open source para garantizar la visibilidad de los algoritmos usados y permitir su revisión, correción y mejora por parte de la comunidad.
 
 Si bien en su origen está pensado para abogados, espero que otros muchos gremios/comunidades encuentren la utilidad a LEXCrypta.
 
 ## ¿Cómo funciona?
-Un usuario que quiere compartir un fichero con alguien se dirige a la pantalla de subida d e LEXCrypta y proporciona un ID de comunicación (mínimo 6 carácteres) y el fichero a subir.
+Un usuario que quiere compartir un fichero con alguien se dirige a la pantalla de subida de LEXCrypta y proporciona un ID de comunicación (mínimo 6 carácteres) asociado al fichero a subir.
 
 El ID es una palabra/contrañesa que identifica a esta transmisión y debe ser conocida tanto por el emisor como por el receptor, ya sea porque lo han establecido de antemano o porque el emisor se la comunicará posteriormente al receptor.
 
