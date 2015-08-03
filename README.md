@@ -10,7 +10,7 @@ LEXCrypta se diseñó pensando en unos objetivos básicos:
 * Toda la información se guardará cifrada en el servidor, de tal forma que ni siquiera alguien con acceso directo al servidor (administrador o hacker) pueda descifrar el contenido de los ficheros (por lo tanto las claves no se guardarán en el servidor)
 
 ## ¿Por qué?
-La idea surgió de un amigo abogado (de ahí lo de "LEX") que me hacía comentarios del tipo: *"tal cliente me envío unos informes"*, o *"los procuradores envía a los abogados los documentos que..."*, o *"aquel perito me envío su peritaje..."*, o *"tengo que enviar a mi colega los papeles del caso..."*.
+La idea surgió de un amigo abogado (de ahí lo de "LEX") que me hacía comentarios del tipo: *"tal cliente me envío unos informes"*, o *"los procuradores envían a los abogados los documentos que..."*, o *"aquel perito me envío su peritaje..."*, o *"tengo que enviar a mi colega los papeles del caso..."*.
 
 Todo esto no sería preocupante si no fuera porque estas transmisiones de documentos con un grado bastante alto de confidencialidad se hacen, la mayoría de la veces, por correo electrónico. No vamos a entrar en detalles técnicos pero el correo electrónico no es un medio seguro/confidencial de transmisión ya que no garantiza que la comunicación entre todos los nodos de la comunicación (clientes, nodos MTA, destinatarios) utilice canales cifrados. 
 
