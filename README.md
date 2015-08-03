@@ -23,11 +23,11 @@ Un usuario que quiere compartir un fichero con alguien se dirige a la pantalla d
 
 El ID es una palabra/contrañesa que identifica a esta transmisión y debe ser conocida tanto por el emisor como por el receptor, ya sea porque lo han establecido de antemano o porque el emisor se la comunicará posteriormente al receptor.
 
-Una vez subido el fichero LEXCrypta proporciona al emisor una URL de descarga con la clave criptográfica que debe enviar al receptor, ya sea por e-mail, Whatsapp, Hangouts, QR-Code, etc. 
+Una vez subido el fichero LEXCrypta se genera una URL de descarga con la clave criptográfica que el emisor debe enviar al receptor por cualquier medio, seguro o no, ya sea por e-mail, WhatsApp, Hangouts, QR-Code, etc. 
 
 Cuando un usuario reciba la URL de descarga y acceda a ella, se le pedirá el ID de la transmisión que sólo él y el emisor deben conocer. Una vez introducidos los datos la descarga del fichero puede comenzar.
 
-Se puede utilizar el e-mail o cualquier medio no cifrado para enviar la URL de descarga con total tranquilidad ya que aún siendo descubierta o robada por un tercero, si éste no posee el ID de la comunicación no podrá descargar el contenido.
+Como hemos dicho anteriormente, se puede utilizar el e-mail o cualquier medio no cifrado para enviar la URL de descarga con total tranquilidad ya que aún siendo descubierta o robada por un tercero, si éste no posee el ID de la comunicación no podrá descargar el contenido.
 
 Es importante recordar que el ID de la comunicación _**NUNCA**_ debe transmitirse _**POR EL MISMO CANAL**_ que la URL con la clave anterior ya que  en caso de que alguien o algo (virus, troyano, etc.) tenga acceso al sistema de mensajería usado, éste podría descargar el contenido del mensaje (está en posesión de los 2 elementos necesarios para la descarga y descifrado del fichero). 
 
@@ -42,18 +42,21 @@ LEXCrypta usa un protocolo muy sencillo cuando un usuario sube un fichero a la p
 
 1. LEXCrypta solicita al usuario un ID para la transimisión. Realmente es una palabra/contraseña que se utilizará, convenientemente tratada, como semilla generadora de un cifrado AES.
 2. Genera una clave AES de 128 bit (para cada fichero subido se crea una nueva clave).
-3. Se trata el ID (truncándolo o ampliándolo para que tenga una longitud de 128 bit, sirviendo de Vector de Inicialización o IV en los posteriores cifrados
+3. Se trata el ID truncándolo o ampliándolo para que tenga una longitud de 128 bit, sirviendo de Vector de Inicialización o IV en los posteriores cifrados
 4. Se cifra el ID transformado del paso anterior con la clave generada en el paso 2, lo que servirá de nueva clave AES (se elimina todo lo que sobre de 128 bit, normalmente el padding empleado)
-5. Con la nueva clave se cifra el ID original, utilizando el IV obtenido en el paso 3 
-6. Con la nueva clave se cifra la ruta del fichero subido en el servidor (usamos también el IV del paso 3)
-7. Con el mismo IV (paso 3) y la nueva clave ciframos el nombre del fichero
-8. Se guarda en base de datos la tupla (ID, ruta_fichero, nombre_fichero), pero cifrado tal y como hemos explicado en 5, 6 y 7
+5. Se cifra el fichero con la nueva clave y el IV del paso 3, guardándose en el servidor
+6. Con la nueva clave se cifra el ID original, utilizando el IV obtenido en el paso 3 
+7. Con la nueva clave se cifra la ruta del fichero subido en el servidor (usamos también el IV del paso 3)
+8. Con el mismo IV (paso 3) y la nueva clave ciframos el nombre del fichero
+9. Se guarda en base de datos la tupla (ID, ruta_fichero, nombre_fichero), con el contenido cifrado tal y como hemos explicado en 6, 7 y 8
 
-En ningún momento se almacena ningún parámetro que pueda generar las diferentes claves utilizadas en el proceso, lo que no permite descubrir el contenido de cada tupla de base de datos, ni asociarlo a ningún fichero real en el servidor (tampoco guardamos el timestamp de la operación para dificultar relacionar registros/tuplas con ficheros mediante fecha de creación), aunque tengamos acceso a base de datos y/o sistema de archivos.
+En ningún momento se almacena en el servidor ningún parámetro que pueda generar las diferentes claves utilizadas en el proceso, lo que imposibilita descubrir el contenido de cada tupla de base de datos, ni asociarlo a ningún fichero real en el servidor (tampoco guardamos el timestamp de la operación para dificultar relacionar registros/tuplas con ficheros mediante la fecha de creación del fichero). Los ficheros guardados en disco también están cifrados, por lo que tampoco podemos recuperar su contenido.
 
-Cuando un usuario intenta bajar un fichero, con el ID proporcionado se repiten los pasos 2, 3 y 4, con lo que tenemos el ID cifrado que identifica de manera única la tupla en base de datos, con lo que obtenemos la ruta del fichero en el servidor y su nombre, y aplicando AES para descifrarlos (en 4 obtuvimos la clave final de cifrado) podemos proceder a la descarga del contenido.
+Cuando un usuario intenta bajar un fichero, con el ID proporcionado se repiten los pasos 3 y 4, con lo que tenemos el ID cifrado que identifica de manera única la tupla en base de datos. A partir de los datos de la tupla, y después de descifrar cada elemento (en 4 obtuvimos la clave final de cifrado), obtenemos la ruta del fichero en el servidor y su nombre, pudiendo proceder a la descarga del contenido en claro (descifrado).
 
-Los ficheros y los registros de base de datos permanecerán una tiempo máximo predeterminado en el sistema ya que unos procesos de limpieza se ejecutarán de forma regular para garantizar que ningún archivo permanezca en el sistema más de lo deseado. En caso de que un fichero sea borrado no habrá forma de recuperarlo, por lo que si se quiere compartir otra vez habrá que realizar una nueva subida.
+Los ficheros y los registros de base de datos permanecerán una tiempo máximo predeterminado en el sistema ya que los procesos de limpieza se ejecutarán de forma regular para garantizar que ningún archivo permanezca en el sistema más de lo deseado. En caso de que un fichero sea borrado no habrá forma de recuperarlo, por lo que si se quiere compartir otra vez habrá que realizar una nueva subida. 
+
+Si se pierde el ID o la clave AES inicial tampoco habrá forma de recuperar el contenido, por lo que será necesario iniciar un nuevo proceso de compartición.
 
 
 
