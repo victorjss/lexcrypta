@@ -4,19 +4,23 @@
     Author     : Víctor Suárez <victorjss@gmail.com>
 --%>
 
+<%@page import="java.util.ResourceBundle"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    ResourceBundle rb = ResourceBundle.getBundle("download_messages", request.getLocale());
+%>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Error 40x</title>
+        <title><%= rb.getString("error400.title") %></title>
         <link type="text/css" href="css/lexcrypta.css" rel="stylesheet"/>
     </head>
     <body>
         <div id="body">
-            <h1>Error de navegación</h1>
+            <h1><%= rb.getString("error400.h1") %></h1>
             <span id="error400">
-            Este contenido o no existe o no se puede acceder como lo ha intentado... ¿Ha utilizado los cauces estándar para llegar aquí?
+            <%= rb.getString("error400.text") %>
             </span>
         </div>
     </body>
