@@ -33,7 +33,7 @@ Es importante recordar que el ID de la comunicación _**NUNCA**_ debe transmitir
 
 Posibles recomendacines para la transmisión del ID pueden ser: 
 
-* transmitido por teléfono
+* transmisión oral
 * mensajería segura
 * puede estar implícito en el propio contexto de la situación (número de expediente, NIF/CIF del sujeto, fecha del acto,...)
 
