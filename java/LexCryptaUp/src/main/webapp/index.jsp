@@ -4,16 +4,19 @@
     Author     : Víctor Suárez <victorjss@gmail.com>
 --%>
 
+<%@page import="java.util.ResourceBundle"%>
 <%@page import="net.lexcrypta.web.up.util.UpUtils"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
     String automaticSeed = UpUtils.generateSeed();
+    
+    ResourceBundle rb = ResourceBundle.getBundle("upload_messages", request.getLocale());
 %>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>LEXCrypta Upload page</title>
+        <title><%= rb.getString("index.title") %></title>
         <link type="text/css" href="css/lexcrypta.css" rel="stylesheet"/>
     </head>
     <body>
@@ -24,31 +27,31 @@
                 is.readOnly = !is.readOnly;
                 is.value = is.readOnly ? seed : "";
                 var bt = document.getElementById ("toggle");
-                bt.value = is.readOnly ? "Manual" : "Automático";
+                bt.value = is.readOnly ? "<%= rb.getString("index.button.manual") %>" : "<%= rb.getString("index.button.auto") %>";
                 return;
             }
         </script>
         <div id="body">
-            <h1>Bienvenido a LEXCrypta</h1>
+            <h1><%= rb.getString("index.welcome") %></h1>
             <form action="upload" method="post" enctype="multipart/form-data">
                 <fieldset>
-                    <legend>Identificación del envío</legend>
+                    <legend><%= rb.getString("index.id.legend") %></legend>
                     <div class="center">
-                        <label for="seed">ID del envío: </label>
-                        <input id="seed" type="text" name="seed" value="" maxlength="20" title="Identificación del envío: NIF, expediente, aleatorio,..."/>
-                        <input id="toggle" type="button" value="Automático" onclick="toggleAutomaticSeed()" class="button"/><br/>
+                        <label for="seed"><%= rb.getString("index.id.label") %></label>
+                        <input id="seed" type="text" name="seed" value="" maxlength="20" title="<%= rb.getString("index.seed.description") %>"/>
+                        <input id="toggle" type="button" value="<%= rb.getString("index.button.auto") %>" onclick="toggleAutomaticSeed()" class="button"/><br/>
                     </div>
-                    <span id="advice-text">No envíe por el mismo medio este ID y la clave de cifrado que se generará en el siguiente paso</span>
+                    <span id="advice-text"><%= rb.getString("index.id.advice") %></span>
                 </fieldset>
                 <fieldset>
-                    <legend>Fichero a compartir</legend>
+                    <legend><%= rb.getString("index.file.legend") %></legend>
                     <div class="center">
-                        <label for="lexfile">Fichero (5 MB máximo): </label>
+                        <label for="lexfile"><%= rb.getString("index.file.label") %></label>
                         <input id="lexfile" type="file" name="lexfile"/>
                     </div>
                 </fieldset>
                 <div class="center">
-                    <input type="submit" value="Cifrar fichero" class="button"/>
+                    <input type="submit" value="<%= rb.getString("index.button.cipher") %>" class="button"/>
                 </div>
             </form>
         </div>
